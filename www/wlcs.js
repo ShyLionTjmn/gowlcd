@@ -1961,10 +1961,10 @@ function refresh_page() {
     for(let ap_id in data["aps"]) {
       apsByMac[ data["aps"][ap_id]["ap_mac"] ] = ap_id;
 
-      if(typeof(global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ]) === 'undefined') {
-        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ] = 1;
+      if(typeof(global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"].trim() ]) === 'undefined') {
+        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"].trim() ] = 1;
       } else {
-        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ] ++;
+        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"].trim() ] ++;
       };
 
       if(typeof(data["aps"][ap_id]["_mark"]) === 'undefined') {
