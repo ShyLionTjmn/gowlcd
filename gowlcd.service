@@ -1,0 +1,9 @@
+[Unit]
+Description=Cisco WLC daemon
+After=network.target redis-server.service rrdcached.service
+
+[Service]
+ExecStart=/usr/local/sbin/gowlcd
+
+[Install]
+WantedBy=multi-user.target
