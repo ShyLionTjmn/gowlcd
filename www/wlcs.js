@@ -5,6 +5,8 @@ var user_self_id="none";
 
 var global_mouse_down=false;
 
+var global_AP_models={};
+
 function save_local(key, value) {
   localStorage.setItem(key+"_"+user_self_id, JSON.stringify(value));
 };
@@ -230,6 +232,12 @@ $( document ).ready(function() {
          .append( $(OPTION).val("5").text("5 сек") )
          .val( get_local("autoupdate_interval", "60") )
          .on("select change", function() { $("#autoupdate").trigger("change"); })
+       )
+       .append( $(LABEL).addClass("min1em") )
+       .append( $(LABEL).addClass("button").text("Модели")
+         .click(function() {
+           show_dialog(jstr(global_AP_models));
+         })
        )
        .append( $(SPAN).prop("id", "wlcs_list")
        )
@@ -1871,6 +1879,8 @@ function refresh_page() {
     structure={};
     apsByMac={};
 
+    global_AP_models={};
+
     //WLC selector
     let wlcs=$(FIELDSET).prop("id", "wlcs_list_fs");
     wlcs.append( $(LEGEND).text("WLC:") )
@@ -1950,6 +1960,12 @@ function refresh_page() {
 
     for(let ap_id in data["aps"]) {
       apsByMac[ data["aps"][ap_id]["ap_mac"] ] = ap_id;
+
+      if(typeof(global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ]) === 'undefined') {
+        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ] = 1;
+      } else {
+        global_AP_models[ data["aps"][ap_id]["ap_attrs"]["ap_model"] ] ++;
+      };
 
       if(typeof(data["aps"][ap_id]["_mark"]) === 'undefined') {
         let wlc_ip=data["aps"][ap_id]["ap_wlc"];
