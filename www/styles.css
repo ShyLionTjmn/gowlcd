@@ -1,0 +1,231 @@
+.ns {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.sel {
+    -webkit-touch-callout: initial;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+.button {
+  border: 1px solid #999999;
+  color: #222222;
+  cursor: pointer;
+  padding: .1em;
+  margin: .1em;
+  background: #e6e6e6;
+  display: inline-block;
+  height: 1.1em;
+  line-height: 100%;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.button:hover, .button:focus {
+  background: #dadada;
+}
+.button:active {
+  background: #e6e6e6;
+}
+.bigbutton {
+  border: 1px solid #999999;
+  color: #222222;
+  cursor: pointer;
+  padding: .5em;
+  margin: .5em;
+  background: #e6e6e6;
+  display: inline-block;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.bigbutton:hover, .button:focus {
+  background: #dadada;
+}
+.bigbutton:active {
+  background: #e6e6e6;
+}
+table.dataTable tfoot td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.indicator {
+  border: 1px solid #999999;
+  color: #555555;
+  padding: .1em;
+  margin: .1em;
+  display: inline-block;
+  position: fixed;
+  right: 1em;
+  top: 1em;
+}
+.wsp {
+  white-space: pre;
+}
+.nosite {
+  margin-left: 0.5em !important;
+  font-size: x-small !important;
+}
+.wlc_ssids_div,.wlc_idles_div,.aps_div,.ap_clients_div,.idle_aps_div {
+  padding-left: 1em;
+}
+.search_help {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  border: 1px solid #404040;
+  font-size: x-small;
+  background-color: #FBEAA0;
+}
+.wlc_head_div,.ap_head_div,.client_div,.ssid_head_div,.idle_head_div {
+  border: 1px solid black;
+  padding-top: 0.1em;
+  margin-top: 2px;
+}
+.ssid_head_div {
+  background-color: yellow;
+}
+.idle_head_div {
+  background-color: lightgray;
+}
+.info_div {
+  border-top: 1px dashed black;
+}
+.offline_ap {
+  background-color: darkred;
+  color: white;
+  border: 1px solid black;
+  border-radius: 0.3em;
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+  margin-top: 0.1em;
+}
+.unknown_ap {
+  background-color: #404040;
+  color: white;
+  border: 1px solid black;
+  border-radius: 0.3em;
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+  margin-top: 0.1em;
+}
+.auth_client {
+  /*background-color: #CCFFCC;*/
+  background-color: mintcream;
+  border: 1px solid black;
+  padding-top: 0.1em;
+}
+.unauth_client {
+  background-color: mistyrose;
+  border: 1px solid black;
+  padding-top: 0.1em;
+}
+.head_buttons_spacer {
+  display: inline-block;
+  min-width: 3em;
+  font-size: smaller;
+}
+.to_filter_head_button {
+  display: inline-block;
+  float: right;
+}
+.good_signal {
+  color: green;
+  font-weight: bold;
+}
+.medium_signal {
+  color: darkorange;
+  font-weight: bold;
+}
+.bad_signal {
+  color: red;
+  font-weight: bold;
+}
+.signal {
+  display: inline-block;
+  min-width: 3em;
+}
+.r_type_cont {
+  display: inline-block;
+  min-width: 4em;
+}
+.radio_type {
+  background-color: #ccffff;
+  border: 1px solid black;
+  padding-left: 0.2em !important;
+  padding-right: 0.2em !important;
+  margin-right: 0.5em;
+  margin-top: 0em !important;
+}
+.radio_div {
+  margin-top: 0.2em;
+  padding-top: 0.2em;
+  border-top: 1px dashed gray;
+}
+.min1em {
+  display: inline-block;
+  min-width: 1em;
+}
+.min2em {
+  display: inline-block;
+  min-width: 2em;
+}
+.min3em {
+  display: inline-block;
+  min-width: 3em;
+}
+.min4em {
+  display: inline-block;
+  min-width: 4em;
+}
+.min5em {
+  display: inline-block;
+  min-width: 5em;
+}
+.radio_on {
+  background-color: #99ffcc;
+  border: 1px solid black;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  margin-right: 0.5em;
+}
+.radio_off {
+  background-color: #ff8080;
+  border: 1px solid black;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  margin-right: 0.5em;
+}
+.events_div {
+  display: table;
+}
+.event_div {
+  display: table-row;
+}
+.event_div > SPAN {
+  display: table-cell;
+  padding-top: 0.2em;
+  padding-right: 1em;
+}
+.event_div > SPAN > SPAN {
+  padding-right: 1em;
+}
+.event_auth_state {
+  padding: 0em !important;
+  min-width: 2.5em;
+  display: inline-block;
+  margin-right: 1em;
+  text-align: center;
+}

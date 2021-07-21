@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+<STYLE>
+HTML,BODY {
+  height: 100%;
+  margin: 0;
+}
+.wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+.workarea {
+  flex: 1;
+  overflow: auto;
+}
+.header {
+  background-color: yellow;
+  border: 1px solid black;
+  margin-bottom: 1em;
+  display: inline-block;
+}
+.wlc_ssids_div,.wlc_idles_div,.aps_div,.ap_clients_div,.idle_aps_div {
+  padding-left: 1em;
+}
+LABEL {
+  background-color: #EEEEEE;
+}
+
+.page {
+  display: inline-block;
+}
+
+.wlc_head_div,.ssid_head_div,.ap_head_div {
+  border: 1px solid black;
+  margin: 1px;
+  text-align: center;
+}
+
+</STYLE>
+</HEAD>
+<BODY>
+
+<DIV class="wrapper">
+  <DIV>
+    <DIV class="header">Header</DIV>
+  </DIV>
+  <DIV class="workarea">
+    <DIV class="page">
+      <DIV class="wlc_div">
+        <DIV class="wlc_head_div">
+          <LABEL>WLC head</LABEL>
+        </DIV>
+        <DIV class="wlc_ssids_div">
+          <DIV class="ssid_div">
+            <DIV class="ssid_head_div">
+              <LABEL>SSID head</LABEL>
+            </DIV>
+            <DIV class="aps_div">
+              <DIV class="ap_div">
+                <DIV class="ap_head_div">
+                  <LABEL>AP name</LABEL>
+                  <LABEL>AP model 123</LABEL>
+                  <LABEL>AP ip</LABEL>
+                </DIV>
+                <DIV class="ap_clients_div">
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client name</LABEL>
+                      <LABEL>Some data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client long name</LABEL>
+                      <LABEL>Some long data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client very long name</LABEL>
+                      <LABEL>Some long data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client name</LABEL>
+                      <LABEL>Some very long data</LABEL>
+                    </DIV>
+                  </DIV>
+                </DIV>
+              </DIV> <!-- ap_div -->
+              <DIV class="ap_div">
+                <DIV class="ap_head_div">
+                  <LABEL>AP long name</LABEL>
+                  <LABEL>AP model 456779446</LABEL>
+                  <LABEL>AP ip</LABEL>
+                </DIV>
+                <DIV class="ap_clients_div">
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client name</LABEL>
+                      <LABEL>Some data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client long name</LABEL>
+                      <LABEL>Some long data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client very long name</LABEL>
+                      <LABEL>Some long data</LABEL>
+                    </DIV>
+                  </DIV>
+                  <DIV class="ap_client_div">
+                    <DIV class="ap_client_head_div">
+                      <LABEL>clientmac</LABEL>
+                      <LABEL>client name</LABEL>
+                      <LABEL>Some very long data</LABEL>
+                    </DIV>
+                  </DIV>
+                </DIV><!-- ap_clients_div -->
+              </DIV> <!-- ap_div -->
+            </DIV><!-- aps_div -->
+          </DIV><!-- ssid_div-->
+        </DIV><!-- wlc_ssids_div-->
+        <DIV class="wlc_idles_div">
+          <DIV class="idle_head_div">
+            <LABEL>Idles</LABEL>
+          </DIV>
+          <DIV class="idle_aps_div">
+            <DIV class="ap_div">
+              <DIV class="ap_head_div">
+                <LABEL>AP name</LABEL>
+                <LABEL>AP model 123</LABEL>
+                <LABEL>AP ip</LABEL>
+              </DIV>
+            </DIV><!-- ap_div -->
+            <DIV class="ap_div">
+              <DIV class="ap_head_div">
+                <LABEL>AP ne</LABEL>
+                <LABEL>AP m 3</LABEL>
+                <LABEL>AP ip</LABEL>
+              </DIV>
+            </DIV><!-- ap_div -->
+          </DIV><!-- idle_aps_div -->
+        </DIV><!-- wlc_idles_div -->
+      </DIV><!-- wlc_div -->
+    </DIV><!-- page -->
+  </DIV><!-- workarea -->
+</DIV><!-- wrapper -->
+
+</BODY>
+</HTML>
