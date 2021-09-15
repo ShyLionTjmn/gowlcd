@@ -65,6 +65,7 @@ type conf_options struct {
   Redis_subject_events_trim uint64 `json:"rrd_global_events_trim"`
   Http_server_addr string   `json:"http_server_addr"`
   Http_max_conn int   `json:"http_max_conn"`
+  Http_server_root string `json:"http_server_root"`
   RRD_base_dir string `json:"rrd_base_dir"`
   RRD_socket string `json:"rrd_socket"`
   Rrd_wlc_create_prefix string `json:"rrd_wlc_create_prefix"`
@@ -108,6 +109,7 @@ var config = conf{
     Redis_global_events_trim: 1000,
     Redis_subject_events_trim: 100,
     Http_server_addr: ":8081",
+    Http_server_root: "/var/lib/gowlcd-www",
     Http_max_conn: 1000,
     RRD_base_dir: "/var/lib/rrdcached/db/gowlcd/",
     RRD_socket: "/var/run/rrdcached.socket",

@@ -179,12 +179,14 @@ $( document ).ready(function() {
   body.css({"height": "100%", "margin": "0"});
   $("HTML").css({"height": "100%", "margin": "0"});
 
-  body
-   .append( $(DIV).prop("id", "debug_win")
-     .addClass("wsp")
-     .css({"position": "fixed", "bottom": "1em", "right": "1em", "width": "35em", "top": "15em", "overflow": "auto", "border": "1px black solid"})
-   )
-  ;
+  if(version.match(/devel/)) {
+    body
+     .append( $(DIV).prop("id", "debug_win")
+       .addClass("wsp")
+       .css({"position": "fixed", "bottom": "1em", "right": "1em", "width": "35em", "top": "15em", "overflow": "auto", "border": "1px black solid"})
+     )
+    ;
+  };
 
   $(DIV) //wrapper
    .css({"display": "flex", "height": "100%", "flex-direction": "column"})
@@ -432,6 +434,12 @@ function get_ap_div(ap_id) {
         .append( $(BR) )
         .append( $(LABEL).text("Location: ") )
         .append( $(SPAN).text(data["aps"][id]["ap_attrs"]["ap_location"]).css({"margin-right": "2em" }) )
+       ;
+
+       idiv
+        .append( $(BR) )
+        .append( $(LABEL).text("Tshark: ") )
+        .append( $(SPAN).text("tshark -n -l -O radius -R 'radius.Called_Station_Id contains \""+pretty_MAC(data["aps"][id]["ap_mac"], "-")+"\" 'udp port 1812 or udp port 1813'").css({"margin-right": "2em" }) )
        ;
 
        idiv

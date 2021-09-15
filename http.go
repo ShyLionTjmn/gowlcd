@@ -3,6 +3,7 @@ package main
 import (
   //"fmt"
   "io"
+  "io/fs"
   "reflect"
   "sync"
   "math"
@@ -27,6 +28,113 @@ type gDS struct {
   Label string `json:"label"`
   Data []interface{} `json:"data"`
 }
+
+var mac_regex *regexp.Regexp
+
+func init() {
+  mac_regex = regexp.MustCompile(`^([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})$`)
+}
+
+func containsDotFile(name string) bool {
+	parts := strings.Split(name, "/")
+	for _, part := range parts {
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+	}
+	return false
+}
+
+type dotFileHidingFile struct {
+	http.File
+}
+
+func redisScan(red redis.Conn, mask string) ([]string, error){
+  if red == nil {
+    return nil, errors.New("nil Redis connection")
+  }
+
+  result := make([]string, 0)
+
+  cursor := "0"
+
+  for {
+    var redres interface{}
+    var err error
+
+    redres, err = red.Do("SCAN", cursor, "MATCH", mask+"*", "COUNT", "100")
+    if err != nil {
+      return nil, err
+    }
+
+    switch redres.(type) {
+    case []interface{}:
+    default:
+      return nil, errors.New("Bad SCAN result type")
+    }
+
+    if len(redres.([]interface{})) != 2 {
+      return nil, errors.New("Bad SCAN result")
+    }
+
+    switch redres.([]interface{})[0].(type) {
+    case []uint8:
+    default:
+      return nil, errors.New("Bad SCAN result cursor type")
+    }
+
+    cursor = string(redres.([]interface{})[0].([]uint8))
+
+    switch redres.([]interface{})[1].(type) {
+    case []interface{}:
+    default:
+      return nil, errors.New("Bad SCAN result keys array type")
+    }
+
+    for _, key := range redres.([]interface{})[1].([]interface{}) {
+      switch key.(type) {
+      case []uint8:
+      default:
+        return nil, errors.New("Bad SCAN result key type")
+      }
+      result=append(result, string(key.([]uint8))[len(mask):])
+    }
+
+    if cursor == "0" {
+      break
+    }
+  }
+
+  return result, nil
+}
+
+
+func (f dotFileHidingFile) Readdir(n int) (fis []fs.FileInfo, err error) {
+	files, err := f.File.Readdir(n)
+	for _, file := range files { // Filters out the dot files
+		if !strings.HasPrefix(file.Name(), ".") {
+			fis = append(fis, file)
+		}
+	}
+	return
+}
+
+type dotFileHidingFileSystem struct {
+	http.FileSystem
+}
+
+func (fsys dotFileHidingFileSystem) Open(name string) (http.File, error) {
+	if containsDotFile(name) { // If dot file, return 403 response
+		return nil, fs.ErrPermission
+	}
+
+	file, err := fsys.FileSystem.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	return dotFileHidingFile{file}, err
+}
+
 
 func http_server(wg *sync.WaitGroup, stop_ch chan struct{}) {
 
@@ -59,7 +167,10 @@ func http_server(wg *sync.WaitGroup, stop_ch chan struct{}) {
     close(server_shut)
   }()
 
-  http.HandleFunc("/", handleRoot)
+  fsys := dotFileHidingFileSystem{http.Dir(config.Options.Http_server_root)}
+
+  http.Handle("/", http.FileServer(fsys))
+  http.HandleFunc("/ajax", handleAjax)
 
   listener, listen_err := net.Listen("tcp", config.Options.Http_server_addr)
   if listen_err != nil {
@@ -297,7 +408,7 @@ func handle_error(r interface{}, w http.ResponseWriter, req *http.Request) {
   http.Error(w, first_line, code)
 }
 
-func handleRoot(w http.ResponseWriter, req *http.Request) {
+func handleAjax(w http.ResponseWriter, req *http.Request) {
 
   if req.Method == "OPTIONS" {
     w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -559,6 +670,71 @@ func handleRoot(w http.ResponseWriter, req *http.Request) {
     globalMutex.RUnlock()
     mutex_locked = false
 
+
+  } else if action == "search_history" {
+    var search_string string
+
+    if search_string, err = get_p_string(q, "search_string", nil); err != nil {
+      panic(err)
+    }
+
+    search_string = strings.ToLower(search_string)
+
+    mac_search := ""
+
+    mac_a := mac_regex.FindStringSubmatch(search_string)
+    if mac_a != nil && len(mac_a) == 7 {
+      mac_search = mac_a[1]+mac_a[2]+mac_a[3]+mac_a[4]+mac_a[5]+mac_a[6]
+    }
+
+    red, err = redis.Dial(config.Options.Redis_conn_type, config.Options.Redis_conn_address, redis.DialDatabase(config.Options.Redis_db))
+    if err != nil {
+      panic("Redis dial error: "+err.Error())
+    }
+    defer red.Close()
+
+    var redis_macs []string
+
+    redis_macs, err = redisScan(red, "events_mac_")
+    if err != nil {
+      panic("Redis SCAN error: "+err.Error())
+    }
+
+    globalMutex.RLock()
+    mutex_locked = true
+
+    for _, mac := range redis_macs {
+      mac_match := strings.Contains(strings.ToLower(mac), search_string)
+      if !mac_match && mac_search != "" {
+        mac_match = mac == mac_search
+      }
+
+      mac_info := make([]macInfo, 0)
+      if mi, mi_ex := globalMacInfo[mac]; mi_ex {
+        reprint.FromTo(&mi, &mac_info)
+      }
+
+      if !mac_match {
+        for _, mi := range mac_info {
+          if mac_match = strings.Contains(strings.ToLower(mi.Username), search_string); mac_match {
+            break
+          }
+          if mac_match = strings.Contains(strings.ToLower(mi.Displayname), search_string); mac_match {
+            break
+          }
+          if mac_match = strings.Contains(strings.ToLower(mi.Reason), search_string); mac_match {
+            break
+          }
+        }
+      }
+
+      if mac_match {
+        out[mac] = mac_info
+      }
+    }
+
+    globalMutex.RUnlock()
+    mutex_locked = false
 
   } else {
     panic("Unknown action '"+action+"'")

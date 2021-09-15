@@ -128,6 +128,8 @@ func myTrapHandler(packet *snmp.SnmpPacket, addr *net.UDPAddr) {
     trap[key] = value
   }
 
+  trap["wlc"] = addr.IP.String()
+
   _, ses_mac_ex := trap["cldcClientMacAddress"]
 
   if ses_id, ses_ex := trap["cldcClientSessionId"]; ses_ex && !ses_mac_ex {
