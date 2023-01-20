@@ -16,6 +16,7 @@ var globalMacInfo = make(map[string][]macInfo)
 type siteInfo struct {
   Mask uint8 `json:"mask"`
   Site string `json:"site"`
+  Tags string `json:"tags"`
   Netname string `json:"netname"`
   First uint32 `json:"first"`
   Last uint32 `json:"last"`
@@ -25,6 +26,7 @@ var globalSites = make(map[uint32]*siteInfo)
 type wlcInfo struct {
   Status string `json:"status"`
   Site string `json:"site"`
+  SiteTags string `json:"site_tags"`
   Netname string `json:"netname"`
   Error string `json:"error"`
   Last_ok int64 `json:"last_ok"`

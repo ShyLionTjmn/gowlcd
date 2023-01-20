@@ -7,6 +7,13 @@ var global_mouse_down=false;
 
 var global_AP_models={};
 
+function same_site(a, b) {
+  if(a === b) return true;
+  if(String(a).length > String(b).length && String(a+",").indexOf(b+",") == 0) return true;
+  if(String(a).length < String(b).length && String(b+",").indexOf(a+",") == 0) return true;
+  return false;
+};
+
 function save_local(key, value) {
   localStorage.setItem(key+"_"+user_self_id, JSON.stringify(value));
 };
@@ -241,6 +248,12 @@ $( document ).ready(function() {
            show_dialog(jstr(global_AP_models));
          })
        )
+       .append( $(LABEL).addClass("min1em") )
+       .append( $(LABEL).addClass("button").text("История")
+         .click(function() {
+           history_dialog();
+         })
+       )
        .append( $(SPAN).prop("id", "wlcs_list")
        )
        .append( $(FIELDSET)
@@ -376,6 +389,8 @@ function get_ap_div(ap_id) {
    .data("id", ap_id)
   ;
 
+  let is_onsite = same_site(data["aps"][ap_id]["ap_attrs"]["ap_site_tags"], data["wlcs"][wlc_ip]["site_tags"]);
+
   let ap_head=$(DIV).addClass("ap_head_div")
    .addClass("info_container")
    //.append( $(LABEL).addClass("ui-icon").addClass("ui-icon-caret-2-s").addClass("button")
@@ -439,7 +454,7 @@ function get_ap_div(ap_id) {
        idiv
         .append( $(BR) )
         .append( $(LABEL).text("Tshark: ") )
-        .append( $(SPAN).text("tshark -n -l -O radius -R 'radius.Called_Station_Id contains \""+pretty_MAC(data["aps"][id]["ap_mac"], "-")+"\" 'udp port 1812 or udp port 1813'").css({"margin-right": "2em" }) )
+        .append( $(SPAN).text("tshark -n -l -O radius -R 'radius.Called_Station_Id contains \""+pretty_MAC(data["aps"][id]["ap_mac"], "-")+"\"' 'udp port 1812 or udp port 1813'").css({"margin-right": "2em" }) )
        ;
 
        idiv
@@ -762,7 +777,7 @@ function get_ap_div(ap_id) {
         .addClass("ui-icon-notice")
         .addClass("ui-state-error")
      )
-     .append( data["aps"][ap_id]["ap_attrs"]["ap_site"] == data["wlcs"][wlc_ip]["site"]? $(LABEL) :
+     .append( is_onsite? $(LABEL) :
        $(LABEL).title("Offsite")
         .addClass("offsite")
         .addClass("ui-icon")
@@ -779,7 +794,7 @@ function get_ap_div(ap_id) {
    .appendTo( ap_div )
   ;
 
-  if(data["aps"][ap_id]["ap_attrs"]["ap_site"] != data["wlcs"][wlc_ip]["site"]) {
+  if(!is_onsite) {
     ap_search_array.push("offsite");
   } else {
     ap_search_array.push("onsite");
@@ -1218,6 +1233,7 @@ function show_mac_events(mac) {
     let dialog=$(DIV).addClass("dialog_start").title("Журнал MAC: "+pretty_MAC(mac,":"))
      .prop("id", "window_mac_events_"+mac)
      .data("local_key", "window_mac_events_"+mac)
+     .data("mac", mac)
      //.css({"min-width": "800px", "min-height": "600px"})
      //.css({"display": "inline-block"})
      .css({"white-space": "pre"})
@@ -1228,7 +1244,9 @@ function show_mac_events(mac) {
        .append( $(LABEL).addClass("button").addClass("ui-icon").addClass("ui-icon-arrowrefresh-1-s").title("Обновить").addClass("events_refresh") )
        .append( $(SPAN).addClass("min1em") )
        .append( $(SPAN).addClass("user_name") )
+       .append( $(SPAN).addClass("min1em") )
      )
+     .append( $(DIV).addClass("graphs_div").hide().css({"padding-bottom": "1em"}) )
      .append( $(DIV).addClass("dialog_contents").text("Загрузка данных ...")
      )
     ;
@@ -1249,6 +1267,290 @@ function show_mac_events(mac) {
             .append( $(SPAN).addClass("min1em") )
             .append( $(SPAN).text(res["ok"]["mac_info"][0]["usrn"]).title(res["ok"]["mac_info"][0]["reas"]) )
            ;
+         };
+
+         let gd = dialog.find(".graphs_div");
+
+         if(res["ok"]["graph_wlcs"].length > 0) {
+           gd.empty().show();
+           gd
+            .append( $(LABEL).text("+").title("Развернуть")
+              .addClass("button")
+              .click(function() {
+                $(this).closest(".graphs_div").find(".wlc_graphs").toggle();
+              })
+            )
+            .append( $(SPAN).addClass("min1em") )
+            .append( $(LABEL).text("Графики") )
+            .append( $(SPAN).addClass("min1em") )
+            .append( $(LABEL).text(res["ok"]["graph_wlcs"].length) )
+            .append( $(SPAN).addClass("min1em") )
+            .append( $(LABEL).text("WLC") )
+           ;
+           res["ok"]["graph_wlcs"].sort();
+           for(let w in res["ok"]["graph_wlcs"]) {
+             let wlc_ip = res["ok"]["graph_wlcs"][w];
+             let wlc_div=$(DIV).addClass("wlc_graphs").hide()
+              .data("wlc_ip", wlc_ip)
+              .append( $(SPAN).addClass("min2em") )
+              .append( $(LABEL).text("+").title("Развернуть")
+                .addClass("button")
+                .click(function() {
+                  $(this).closest(".wlc_graphs").find(".wlc_graphs_btns,.graphs_area").toggle();
+                })
+              )
+              .append( $(SPAN).addClass("min1em") )
+              .append( $(SPAN).text(wlc_ip) )
+              .append( $(SPAN).addClass("min1em") )
+              .append( $(SPAN).text(typeof(data["wlcs"][wlc_ip]) === 'undefined'?"":data["wlcs"][wlc_ip]["attrs"]["host_name"]) )
+              .append( $(DIV)
+                .addClass("wlc_graphs_btns").hide()
+                .append( $(SPAN).addClass("min4em") )
+                .append( $(LABEL).text("RSSI/SNR: ") )
+                .append( $(LABEL).addClass("ui-icon").addClass("ui-icon-chart-line").addClass("button")
+                  .click(function() {
+                    let subject_div=$(this).closest(".wlc_graphs").find(".graphs_area");
+                    let info_div=subject_div;
+                    let mac=subject_div.closest(".dialog_start").data("mac");
+                    let wlc_ip=$(this).closest(".wlc_graphs").data("wlc_ip");
+                    let id=mac+"@"+wlc_ip;
+                    let graph_class="graph_client_signal";
+                    let local_key="events_"+graph_class+"_"+id;
+
+                    if(subject_div.find("."+graph_class).length > 0) {
+                      subject_div.find("."+graph_class).find(".close").trigger("click");
+                      return;
+                    };
+
+                    let graph_keys={
+                      "cl_rssi": {
+                        "_order": 1,
+                        "label": "RSSI",
+                        "color": "blue",
+                        "borderColor": "blue",
+                        "borderWidth": 1,
+                        "backgroundColor": "blue",
+                        "yAxisID": "y",
+                      },
+                      "cl_snr": {
+                        "_order": 2,
+                        "label": "SNR",
+                        "color": "cyan",
+                        "borderColor": "cyan",
+                        "borderWidth": 1,
+                        "backgroundColor": "cyan",
+                        "yAxisID": "y1",
+                      },
+                    };
+
+                    let graph_options={
+                      "options": {
+                        "scales": {
+                          "y": {
+                            "type": "linear",
+                            "display": true,
+                            "position": "left",
+                          },
+                          "y1": {
+                            "type": "linear",
+                            "display": true,
+                            "position": "right",
+                            "grid": { "drawOnChartArea": false },
+                            "beginAtZero": true
+                          },
+                        },
+                      },
+                    };
+                 
+
+                    let graph_div=get_graph_div('Качество сигнала', graph_class, "client", id, graph_keys, graph_options, local_key)
+                     .css({"background-color": "white"})
+                     .appendTo(info_div)
+                    ;
+                    graph_div.find(".refresh").trigger("click");
+                  })
+                )
+                .append( $(SPAN).addClass("min1em") )
+                .append( $(LABEL).text("Bytes: ") )
+                .append( $(LABEL).addClass("ui-icon").addClass("ui-icon-chart-line").addClass("button")
+                  .click(function() {
+                    let subject_div=$(this).closest(".wlc_graphs").find(".graphs_area");
+                    let info_div=subject_div;
+                    let mac=subject_div.closest(".dialog_start").data("mac");
+                    let wlc_ip=$(this).closest(".wlc_graphs").data("wlc_ip");
+                    let id=mac+"@"+wlc_ip;
+                    let graph_class="graph_client_bytes";
+                    let local_key="events_"+graph_class+"_"+id;
+
+                    if(subject_div.find("."+graph_class).length > 0) {
+                      subject_div.find("."+graph_class).find(".close").trigger("click");
+                      return;
+                    };
+
+                    let graph_keys={
+                      "cl_bytes_rx": {
+                        "_order": 1,
+                        "label": "Байт/c от пользователя",
+                        "color": "blue",
+                        "borderColor": "blue",
+                        "borderWidth": 1,
+                        "backgroundColor": "blue",
+                        "yAxisID": "y",
+                      },
+                      "cl_bytes_tx": {
+                        "_order": 2,
+                        "label": "Байт/с к пользователю",
+                        "color": "cyan",
+                        "borderColor": "cyan",
+                        "borderWidth": 1,
+                        "backgroundColor": "cyan",
+                        "yAxisID": "y",
+                      },
+                    };
+
+                    let graph_options={
+                      "options": {
+                        "scales": {
+                          "y": {
+                            "type": "linear",
+                            "display": true,
+                            "position": "left",
+                          },
+                        },
+                      },
+                    };
+                 
+
+                    let graph_div=get_graph_div('Траффик, байты', graph_class, "client", id, graph_keys, graph_options, local_key)
+                     .css({"background-color": "white"})
+                     .appendTo(info_div)
+                    ;
+                    graph_div.find(".refresh").trigger("click");
+                  })
+                )
+                .append( $(SPAN).addClass("min1em") )
+                .append( $(LABEL).text("Pkts: ") )
+                .append( $(LABEL).addClass("ui-icon").addClass("ui-icon-chart-line").addClass("button")
+                  .click(function() {
+                    let subject_div=$(this).closest(".wlc_graphs").find(".graphs_area");
+                    let info_div=subject_div;
+                    let mac=subject_div.closest(".dialog_start").data("mac");
+                    let wlc_ip=$(this).closest(".wlc_graphs").data("wlc_ip");
+                    let id=mac+"@"+wlc_ip;
+                    let graph_class="graph_client_pkts";
+                    let local_key="events_"+graph_class+"_"+id;
+
+                    if(subject_div.find("."+graph_class).length > 0) {
+                      subject_div.find("."+graph_class).find(".close").trigger("click");
+                      return;
+                    };
+
+                    let graph_keys={
+                      "cl_pkts_rx": {
+                        "_order": 1,
+                        "label": "Пакет/c от пользователя",
+                        "color": "blue",
+                        "borderColor": "blue",
+                        "borderWidth": 1,
+                        "backgroundColor": "blue",
+                        "yAxisID": "y",
+                      },
+                      "cl_pkts_tx": {
+                        "_order": 2,
+                        "label": "Пакет/с к пользователю",
+                        "color": "cyan",
+                        "borderColor": "cyan",
+                        "borderWidth": 1,
+                        "backgroundColor": "cyan",
+                        "yAxisID": "y",
+                      },
+                    };
+
+                    let graph_options={
+                      "options": {
+                        "scales": {
+                          "y": {
+                            "type": "linear",
+                            "display": true,
+                            "position": "left",
+                          },
+                        },
+                      },
+                    };
+                 
+
+                    let graph_div=get_graph_div('Траффик, пакеты', graph_class, "client", id, graph_keys, graph_options, local_key)
+                     .css({"background-color": "white"})
+                     .appendTo(info_div)
+                    ;
+                    graph_div.find(".refresh").trigger("click");
+                  })
+                )
+                .append( $(SPAN).addClass("min1em") )
+                .append( $(LABEL).text("Err: ") )
+                .append( $(LABEL).addClass("ui-icon").addClass("ui-icon-chart-line").addClass("button")
+                  .click(function() {
+                    let subject_div=$(this).closest(".wlc_graphs").find(".graphs_area");
+                    let info_div=subject_div;
+                    let mac=subject_div.closest(".dialog_start").data("mac");
+                    let wlc_ip=$(this).closest(".wlc_graphs").data("wlc_ip");
+                    let id=mac+"@"+wlc_ip;
+                    let graph_class="graph_client_errors";
+                    let local_key="events_"+graph_class+"_"+id;
+
+                    if(subject_div.find("."+graph_class).length > 0) {
+                      subject_div.find("."+graph_class).find(".close").trigger("click");
+                      return;
+                    };
+
+                    let graph_keys={
+                      "cl_data_retries": {
+                        "_order": 1,
+                        "label": "Повторы",
+                        "color": "brown",
+                        "borderColor": "brown",
+                        "borderWidth": 1,
+                        "backgroundColor": "brown",
+                        "yAxisID": "y",
+                      },
+                      "cl_dup_pkts": {
+                        "_order": 2,
+                        "label": "Дубликаты",
+                        "color": "red",
+                        "borderColor": "red",
+                        "borderWidth": 1,
+                        "backgroundColor": "red",
+                        "yAxisID": "y",
+                      },
+                    };
+
+                    let graph_options={
+                      "options": {
+                        "scales": {
+                          "y": {
+                            "type": "linear",
+                            "display": true,
+                            "position": "left",
+                          },
+                        },
+                      },
+                    };
+                 
+
+                    let graph_div=get_graph_div('Счетчики ошибок', graph_class, "client", id, graph_keys, graph_options, local_key)
+                     .css({"background-color": "white"})
+                     .appendTo(info_div)
+                    ;
+                    graph_div.find(".refresh").trigger("click");
+                  })
+                )
+              )
+              .append( $(DIV).addClass("graphs_area").hide().css({"padding-bottom": "1em"}) )
+              .appendTo(gd)
+             ;
+           };
+         } else {
+           gd.empty().hide();
          };
 
          $("#debug_win").text(jstr(res["ok"]));
@@ -1355,6 +1657,7 @@ function get_client_div(client_id) {
 
   let wlc_ip=data["clients"][client_id]["client_wlc"];
   let cl_site=data["clients"][client_id]["client_attrs"]["cl_site"];
+  let cl_site_tags=data["clients"][client_id]["client_attrs"]["cl_site_tags"];
 
   let client_div=$(DIV).addClass("client_div")
    .data("id", client_id)
@@ -1388,7 +1691,7 @@ function get_client_div(client_id) {
         .addClass("ui-icon-notice")
         .addClass("ui-state-error")
      )
-     .append( (cl_site == data["wlcs"][wlc_ip]["site"] || cl_site == "null" || cl_site == "nosite")? $(LABEL) :
+     .append( (same_site(cl_site_tags, data["wlcs"][wlc_ip]["site_tags"]) || cl_site == "null" || cl_site == "nosite")? $(LABEL) :
        $(LABEL).title("Local switched")
         .addClass("offsite")
         .addClass("ui-icon")
@@ -2587,4 +2890,113 @@ function apply_filters( page ) {
       };
     };
   });
+};
+
+function history_dialog() {
+  let dialog=$(DIV).addClass("dialog_start").title("Журнал")
+   .prop("id", "window_history")
+   .css({"white-space": "pre"})
+  ;
+
+  dialog
+   .append( $(DIV).addClass("dialog_head")
+     .append( $(LABEL).text("Строка для поиска:") )
+     .append( $(SPAN).addClass("min1em") )
+     .append( $(INPUT)
+       .prop("id", "search_string")
+       .prop("type", "search")
+       .enterKey(function() {
+         $("#search_btn").trigger("click");
+       })
+     )
+     .append( $(SPAN).addClass("min1em") )
+     .append( $(LABEL).text("Лимит:") )
+     .append( $(SPAN).addClass("min1em") )
+     .append( $(INPUT)
+       .prop("id", "search_limit")
+       .val(100)
+       .enterKey(function() {
+         $("#search_btn").trigger("click");
+       })
+     )
+     .append( $(SPAN).addClass("min1em") )
+     .append( $(LABEL).addClass("button").text("Поиск")
+       .prop("id", "search_btn")
+       .click(function() {
+         let dialog=$(this).closest(".dialog_start");
+
+         let limit=$("#search_limit").val();
+         if(! limit.match(/^\d+$/)) {
+           $("#search_limit").animateHighlight("red", 500);
+           return;
+         };
+         let query={"action": "search_history", "search_string": $("#search_string").val(), "search_limit": limit};
+
+         run_query(query, function(res) {
+           let contents = dialog.find(".dialog_contents");
+
+           let table=$(TABLE);
+
+           let macs = keys(res["ok"]);
+
+           macs.sort();
+
+           $("#search_found").text("Найдено "+macs.length+" записей");
+
+           for(let i in macs) {
+             let mac = macs[i];
+
+             if(res["ok"][mac].length == 0) {
+               res["ok"][mac] = [{"usrn": "", "dspn": "", "reas": ""}];
+             };
+
+             for(let ui in res["ok"][mac]) {
+               let macinfo=res["ok"][mac][ui];
+               table
+                .append( $(TR)
+                  .data("mac", mac)
+                  .append( $(TD)
+                    .append( $(LABEL).addClass("button").addClass("ui-icon").addClass("ui-icon-history").title("Журнал событий")
+                      .click(function() {
+                        let _mac=$(this).closest("TR").data("mac");
+                        show_mac_events(_mac);
+                      })  
+                    )
+                  )
+                  .append( $(TD).text(pretty_MAC(mac, ":")) )
+                  .append( $(TD).text(macinfo["usrn"]).title(macinfo["reas"]) )
+                  .append( $(TD).text(macinfo["dspn"]).title(macinfo["reas"]) )
+                )
+               ;
+             };
+           };
+
+           contents.empty().append(table);
+
+         });
+       })
+     )
+     .append( $(SPAN).addClass("min1em") )
+     .append( $(LABEL).prop("id", "search_found") )
+   )
+   .append( $(DIV).addClass("dialog_contents").text("Введите запрос") )
+  ;
+
+  let dialog_options = {
+    close: function() {
+      $(this).dialog("destroy");
+      $(this).remove();
+    },
+    width: "auto",
+    modal: true,
+    maxWidth: 1000,
+    maxHeight: 900,
+    minWidth: 600,
+    minHeight: 400,
+  };
+
+  dialog.appendTo("BODY");
+
+  dialog.dialog(dialog_options);
+
 };

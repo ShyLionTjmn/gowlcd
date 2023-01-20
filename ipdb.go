@@ -4,7 +4,9 @@ import (
   "sync"
   //"fmt"
   "time"
-  "regexp"
+  "math"
+  "errors"
+  "strings"
   //"encoding/json"
   "database/sql"
   _ "github.com/go-sql-driver/mysql"
@@ -13,11 +15,8 @@ import (
   "github.com/jimlawless/whereami"
 )
 
-var site_tag_regex *regexp.Regexp
-
 func init() {
   whereami.WhereAmI()
-  site_tag_regex = regexp.MustCompile(`(?:^|[,;])\s*site=([^,;]*)\s*(?:$|[,;])`)
 }
 
 const allOnes uint32=0xFFFFFFFF
@@ -25,56 +24,135 @@ const allOnes uint32=0xFFFFFFFF
 func query_db(db *sql.DB) error {
   ip2site := make(map[uint32]*siteInfo)
 
-  rows, err := db.Query("SELECT ipu, mask, tags, name FROM nets WHERE tags LIKE '%site=%'")
-  if err != nil { return err; }
+  var query string
+  var err error
+  var rows []M
+  var tag_rows []M
+  var var_ok bool
 
-  for rows.Next() {
-    var ipu uint32;
-    var plen uint8;
-    var tags string;
-    var netname string;
+  tags_index := make(map[string]int)
+  var location_root string
 
-    err = rows.Scan(&ipu, &plen, &tags, &netname)
-    if err != nil {
-      rows.Close()
-      return err;
+  query = "SELECT * FROM tags"
+  if tag_rows, err = return_query_A(db, query); err != nil { return err; }
+
+  for i, row := range tag_rows {
+    var tag_id string
+    if tag_id, var_ok = row.UintString("tag_id"); !var_ok { return errors.New("no tag_id") }
+
+    var tag_api_name string
+    tag_api_name, _ = row.String("tag_api_name")
+    if tag_api_name == "location" {
+      location_root = tag_id
     }
 
-    matches := site_tag_regex.FindStringSubmatch(tags)
-    if matches != nil {
+    tags_index[tag_id] = i
+  }
 
-      mask := uint32( (allOnes << (32-plen)) & allOnes )
-      wc := uint32( (^mask) & allOnes )
-      first := ipu & mask
-      last := ipu | wc
+  if location_root == "" {
+    return errors.New("no location root tag found")
+  }
 
-      ip2site[ipu] = &siteInfo{plen, matches[1], netname, first, last}
+  var traverse func(string, int) (string, error)
+  traverse = func(tag_id string, counter int) (string, error) {
+    if counter > 100 { return "", errors.New("tags loop detected") }
+    var row_index int
+    var ex bool
+    if row_index, ex = tags_index[tag_id]; !ex { return "", errors.New("No tag "+tag_id+" in index") }
+    if _, ex = tag_rows[row_index]["_nl"]; ex { return "", nil }
+    if tag_id == location_root { return tag_id, nil }
+    if tag_rows[row_index]["tag_fk_tag_id"] == nil { return "", nil }
+    var parent_id string
+    if parent_id, ex = tag_rows[row_index].UintString("tag_fk_tag_id"); !ex { return "", errors.New("No parent tag for "+tag_id) }
+    if path, err := traverse(parent_id, counter + 1); err != nil {
+      return "", err
+    } else {
+      if path == "" {
+        tag_rows[row_index]["_nl"] = struct{}{}
+        return "", nil
+      }
+      return path+","+tag_id, nil
     }
   }
-  rows.Close()
 
-  rows, err = db.Query("SELECT ipdata.ipu, TRIM(value) as site, name"+
-    " FROM ((ipdata"+
-    " INNER JOIN columns ON ipdata.cid=columns.id)"+
-    " INNER JOIN ips ON ips.ipu=ipdata.ipu)"+
-    " INNER JOIN nets ON ips.nipu=nets.ipu"+
-    " WHERE cname='SITE_ID' HAVING site != ''")
-  if err != nil { return err; }
+  query = "SELECT v4net_addr, v4net_last, v4net_name, v4net_tags, v4net_mask FROM v4nets WHERE v4net_tags != ''"
+  if rows, err = return_query_A(db, query); err != nil { return err }
 
-  for rows.Next() {
-    var ipu uint32;
-    var site string;
-    var netname string;
+  for _, row := range rows {
+    var row_tags string
+    row_tags, _ = row.String("v4net_tags")
+    if row_tags != "" {
+      var u64 uint64
+      var ip_addr uint32
+      var ip_last uint32
+      var mask uint8
+      var net_name string
 
-    err = rows.Scan(&ipu, &site, &netname)
-    if err != nil {
-      rows.Close()
-      return err;
+      if u64, var_ok = row.Uint64("v4net_addr"); !var_ok { return errors.New("no v4net_addr") }
+      if u64 > math.MaxUint32 { return errors.New("v4net_addr overflow") }
+      ip_addr = uint32(u64)
+      if u64, var_ok = row.Uint64("v4net_last"); !var_ok { return errors.New("no v4net_last") }
+      if u64 > math.MaxUint32 { return errors.New("v4net_last overflow") }
+      ip_last = uint32(u64)
+      if u64, var_ok = row.Uint64("v4net_mask"); !var_ok { return errors.New("no v4net_mask") }
+      if u64 > math.MaxUint8 { return errors.New("v4net_mask overflow") }
+      mask = uint8(u64)
+
+      net_name, _ = row.String("v4net_name")
+
+      tags_list := strings.Split(row_tags, ",")
+      for _, tag_id := range tags_list {
+        if tag_i, ex := tags_index[tag_id]; ex {
+          var tag_name string
+          if tag_name, var_ok = tag_rows[tag_i].String("tag_name"); !var_ok { return errors.New("no tag_name") }
+          tags_path, err := traverse(tag_id, 0)
+          if err != nil { return err }
+          if tags_path != "" {
+            ip2site[ip_addr] = &siteInfo{mask, tag_name, tags_path, net_name, ip_addr, ip_last}
+          }
+        }
+      }
     }
-
-    ip2site[ipu] = &siteInfo{32, site, netname, ipu, ipu}
   }
-  rows.Close()
+
+
+  query = "SELECT v4ip_addr, v4net_name, iv_value"+
+          " FROM ((((v4ips"+
+               " INNER JOIN v4nets ON v4ip_fk_v4net_id=v4net_id)"+
+               " INNER JOIN n4cs ON nc_fk_v4net_id=v4net_id)"+
+               " INNER JOIN ics ON nc_fk_ic_id=ic_id)"+
+               " INNER JOIN i4vs ON iv_fk_ic_id=ic_id AND iv_fk_v4ip_id=v4ip_id)"+
+          " WHERE iv_value != '' AND ic_type='tag' AND ic_api_name='location'"
+  if rows, err = return_query_A(db, query); err != nil { return err }
+
+  for _, row := range rows {
+    var row_tags string
+    row_tags, _ = row.String("iv_value")
+    if row_tags != "" {
+      var u64 uint64
+      var ip_addr uint32
+      var net_name string
+
+      if u64, var_ok = row.Uint64("v4ip_addr"); !var_ok { return errors.New("no v4net_addr") }
+      if u64 > math.MaxUint32 { return errors.New("v4net_addr overflow") }
+      ip_addr = uint32(u64)
+
+      net_name, _ = row.String("v4net_name")
+
+      tags_list := strings.Split(row_tags, ",")
+      for _, tag_id := range tags_list {
+        if tag_i, ex := tags_index[tag_id]; ex {
+          var tag_name string
+          if tag_name, var_ok = tag_rows[tag_i].String("tag_name"); !var_ok { return errors.New("no tag_name") }
+          tags_path, err := traverse(tag_id, 0)
+          if err != nil { return err }
+          if tags_path != "" {
+            ip2site[ip_addr] = &siteInfo{32, tag_name, tags_path, net_name, ip_addr, ip_addr}
+          }
+        }
+      }
+    }
+  }
 
   globalMutex.Lock()
 

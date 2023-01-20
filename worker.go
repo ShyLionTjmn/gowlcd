@@ -245,6 +245,28 @@ func get_site(ip string) string {
   return "nosite"
 }
 
+func get_site_tags(ip string) string {
+  if ip == "0.0.0.0" || ip == "" {
+    return "null"
+  }
+  longIP, ip2long_err := Ip2long(ip)
+  if ip2long_err != nil {
+    return "error"
+  }
+  if site, site_exists := globalSites[longIP]; site_exists {
+    return site.Tags
+  }
+
+  for _, si := range globalSites {
+    if longIP >= si.First  && longIP <= si.Last {
+      return si.Tags
+    }
+  }
+
+  return "nosite"
+}
+
+
 func get_netname(ip string) string {
   if ip == "0.0.0.0" || ip == "" {
     return "null"
@@ -300,6 +322,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
     }
 
     globalWlcs[dev_ip].Site = get_site(dev_ip)
+    globalWlcs[dev_ip].SiteTags = get_site_tags(dev_ip)
     globalWlcs[dev_ip].Netname = get_netname(dev_ip)
   }
   globalMutex.Unlock()
@@ -331,6 +354,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
 
     globalMutex.Lock()
     globalWlcs[dev_ip].Site = get_site(dev_ip)
+    globalWlcs[dev_ip].SiteTags = get_site_tags(dev_ip)
     globalWlcs[dev_ip].Netname = get_netname(dev_ip)
     globalMutex.Unlock()
 
@@ -759,6 +783,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
 
 
             client.Attrs["cl_site"] = get_site(client.Attrs["cl_ip"])
+            client.Attrs["cl_site_tags"] = get_site_tags(client.Attrs["cl_ip"])
             client.Attrs["cl_netname"] = get_netname(client.Attrs["cl_ip"])
 
             //get OUI info
@@ -895,6 +920,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
             ap.Status = "online"
 
             ap.Attrs["ap_site"] = get_site(ap.Attrs["ap_ip"])
+            ap.Attrs["ap_site_tags"] = get_site_tags(ap.Attrs["ap_ip"])
             ap.Attrs["ap_netname"] = get_netname(ap.Attrs["ap_ip"])
 
             if !first_scan {

@@ -4,10 +4,13 @@ import (
   //"fmt"
   "io"
   "io/fs"
+  "io/ioutil"
   "reflect"
   "sync"
   "math"
   "strings"
+  "strconv"
+  "sort"
   "context"
   "time"
   "encoding/json"
@@ -29,9 +32,12 @@ type gDS struct {
   Data []interface{} `json:"data"`
 }
 
+var MIN_RRD_FILENAME_LEN int
+
 var mac_regex *regexp.Regexp
 
 func init() {
+  MIN_RRD_FILENAME_LEN = len("112233445566@1.1.1.1.rrd")
   mac_regex = regexp.MustCompile(`^([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})[\-:\.]?([0-9a-fA-F]{2})$`)
 }
 
@@ -665,6 +671,25 @@ func handleAjax(w http.ResponseWriter, req *http.Request) {
         reprint.FromTo(&mi, &mac_info)
       }
       out["mac_info"] = mac_info
+
+      files, ferr := ioutil.ReadDir(config.Options.RRD_base_dir+"/clients/")
+      if ferr != nil {
+        panic(ferr)
+      }
+
+      out["graph_wlcs"] = make([]string, 0)
+
+      for _, fileinfo := range files {
+        if !fileinfo.IsDir() {
+          filename := fileinfo.Name()
+          // 112233445566@1.1.1.1.rrd
+          if len(filename) >= MIN_RRD_FILENAME_LEN && filename[0:13] == macOrUser+"@" && filename[len(filename)-4:] == ".rrd" {
+            wlc_addr := filename[13:len(filename)-4]
+
+            out["graph_wlcs"] = append(out["graph_wlcs"].([]string), wlc_addr)
+          }
+        }
+      }
     }
 
     globalMutex.RUnlock()
@@ -677,6 +702,19 @@ func handleAjax(w http.ResponseWriter, req *http.Request) {
     if search_string, err = get_p_string(q, "search_string", nil); err != nil {
       panic(err)
     }
+
+    var search_limit_str string
+    if search_limit_str, err = get_p_string(q, "search_limit", `^\d+$`); err != nil {
+      panic(err)
+    }
+
+    var search_limit uint64
+
+    if search_limit, err = strconv.ParseUint(search_limit_str, 10, 64); err != nil {
+      panic(err)
+    }
+
+
 
     search_string = strings.ToLower(search_string)
 
@@ -700,8 +738,12 @@ func handleAjax(w http.ResponseWriter, req *http.Request) {
       panic("Redis SCAN error: "+err.Error())
     }
 
+    sort.Strings(redis_macs)
+
     globalMutex.RLock()
     mutex_locked = true
+
+    found := uint64(0)
 
     for _, mac := range redis_macs {
       mac_match := strings.Contains(strings.ToLower(mac), search_string)
@@ -730,6 +772,10 @@ func handleAjax(w http.ResponseWriter, req *http.Request) {
 
       if mac_match {
         out[mac] = mac_info
+        found++
+        if found >= search_limit {
+          break
+        }
       }
     }
 
@@ -762,106 +808,3 @@ func handleAjax(w http.ResponseWriter, req *http.Request) {
   w.Write(json)
   w.Write([]byte("\n"))
 }
-/*
-func handleGraph(w http.ResponseWriter, req *http.Request) {
-
-  defer func() { handle_error(recover(), w, req); } ()
-
-  req.ParseForm()
-
-  mutex_locked := false
-  defer func() { if mutex_locked { globalMutex.Unlock(); mutex_locked = false; }; } ()
-
-  var red redis.Conn
-  var err error
-
-  red, err = redis.Dial(config.Options.Redis_conn_type, config.Options.Redis_conn_address, redis.DialDatabase(config.Options.Redis_db))
-  if err != nil {
-    panic("Redis dial error: "+err.Error())
-  }
-  defer red.Close()
-
-  red_key := "graph_cache_"
-
-  subj_type := require_param(req, "type", []string{"ap_users"})
-
-  red_key += subj_type+"_"
-
-  var mac string
-  var wlc string
-  var ap_radio string
-
-  var rrd_file = config.Options.RRD_base_dir
-  fields_list := make([]interface{}, 0)
-
-  var start = fmt.Sprintf("%d", time.Now().Add(-time.Hour).Unix())
-  var end = fmt.Sprintf("%d", time.Now().Unix())
-
-  start = require_param(req, "start", uint_reg, false, start)
-  end = require_param(req, "end", uint_reg, false, end)
-
-  switch subj_type {
-  case "ap_users":
-    mac = require_param(req, "mac", mac_reg)
-    wlc = require_param(req, "wlc", ip_reg)
-    ap_radio = require_param(req, "radios", []string{"0", "1", "0,1"})
-    rrd_file += "aps/"+mac+"@"+wlc
-    for _, r := range strings.Split(ap_radio, ",") {
-      fields_list = append(fields_list, "r_users_"+r)
-    }
-  default:
-    panic("Code error at: "+wai.WhereAmI())
-  }
-
-  rrd_file += ".rrd"
-
-  red_key += mac+"_"+wlc+"_"+ap_radio+"_"+start+"_"+end
-
-  _, no_cache := req.Form["no_cache"]
-  if !no_cache {
-    _, no_cache = req.Form["no-cache"]
-  }
-  if !no_cache {
-    _, no_cache = req.Form["nocache"]
-  }
-
-  if !no_cache {
-    bytes, err := redis.Bytes(red.Do("GET", red_key))
-    if err == nil {
-      //stream bytes to client
-
-        //w.Header().Set("Content-Type", "image/png")
-        w.Header().Set("Cache-Control", "no-cache")
-        w.WriteHeader(http.StatusOK)
-        w.Write(bytes)
-
-        return
-    } else if(err != redis.ErrNil) {
-      panic(err)
-    }
-  }
-
-  rrdc, rrdc_err := rrd.NewClient(config.Options.RRD_socket, rrd.Unix)
-  if rrdc_err != nil {
-    panic("RRD connect error: "+rrdc_err.Error())
-  }
-  defer rrdc.Close()
-
-  args_list := make([]interface{}, 0)
-  args_list = append(args_list, start, end)
-  args_list = append(args_list, fields_list...)
-
-  if res, err := rrdc.FetchBin(rrd_file, "AVERAGE", args_list...); err != nil {
-    panic("RRD fetch error: "+err.Error())
-  } else {
-
-    w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-    w.Header().Set("Cache-Control", "no-cache")
-    w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Methods", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "*")
-    w.WriteHeader(http.StatusOK)
-
-  }
-}
-*/
