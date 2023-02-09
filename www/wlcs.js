@@ -558,206 +558,208 @@ function get_ap_div(ap_id) {
        };
 
        for(let r=0; r < data["aps"][id]["ap_attrs"]["ap_num_slots"]; r++) {
-         let radio_div=$(DIV).addClass("radio_div")
-          .data("id", r)
-         ;
-         let radio_type="UNKN";
-         if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "1") {
-           radio_type="2.4Ghz";
-         } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "2") {
-           radio_type="5Ghz";
-         } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "4") {
-           radio_type="UWB";
-         };
+         if(data["aps"][id]["ap_radio_attrs"][r] !== undefined) {
+           let radio_div=$(DIV).addClass("radio_div")
+            .data("id", r)
+           ;
+           let radio_type="UNKN";
+           if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "1") {
+             radio_type="2.4Ghz";
+           } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "2") {
+             radio_type="5Ghz";
+           } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "4") {
+             radio_type="UWB";
+           };
 
-         radio_div
-          .data("band", radio_type)
-          .append( $(LABEL).text("Radio: ") )
-          .append( $(SPAN).addClass("r_type_cont").append( $(LABEL).text(radio_type).addClass("radio_type") ) )
-          .append( $(SPAN).addClass("min3em")
-            .append( data["aps"][id]["ap_radio_attrs"][r]["r_state"] == 1?
-              $(LABEL).text("OFF").addClass("radio_off"):
-              $(LABEL).text("On").addClass("radio_on")
+           radio_div
+            .data("band", radio_type)
+            .append( $(LABEL).text("Radio: ") )
+            .append( $(SPAN).addClass("r_type_cont").append( $(LABEL).text(radio_type).addClass("radio_type") ) )
+            .append( $(SPAN).addClass("min3em")
+              .append( data["aps"][id]["ap_radio_attrs"][r]["r_state"] == 1?
+                $(LABEL).text("OFF").addClass("radio_off"):
+                $(LABEL).text("On").addClass("radio_on")
+              )
             )
-          )
-          .append( $(LABEL).text("Ch: ") )
-          .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_channel"]) )
-          .append( $(LABEL).text("Pwr: ") )
-          .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_power"]).title("Power level, 1 - highest") )
-          .append( $(LABEL).text("Users: ") )
-          .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_users"]) )
-          .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
-            .addClass("ui-icon").addClass("ui-icon-chart-line")
-            .addClass("button").addClass("button_graph_r_users"+r)
-            .click(function() {
-              let subject_div = $(this).closest(".ap_div");
-              let info_div = subject_div.find(".ap_head_div").find(".info_div");
-              let id = subject_div.data("id");
-              let radio_div = $(this).closest(".radio_div");
-              let radio_id = radio_div.data("id");
-              let band = radio_div.data("band");
-              let graph_class = "graph_ap_radio"+radio_id+"_users";
-              let local_key = graph_class+"_"+id;
+            .append( $(LABEL).text("Ch: ") )
+            .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_channel"]) )
+            .append( $(LABEL).text("Pwr: ") )
+            .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_power"]).title("Power level, 1 - highest") )
+            .append( $(LABEL).text("Users: ") )
+            .append( $(SPAN).addClass("min2em").text(data["aps"][id]["ap_radio_attrs"][r]["r_users"]) )
+            .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
+              .addClass("ui-icon").addClass("ui-icon-chart-line")
+              .addClass("button").addClass("button_graph_r_users"+r)
+              .click(function() {
+                let subject_div = $(this).closest(".ap_div");
+                let info_div = subject_div.find(".ap_head_div").find(".info_div");
+                let id = subject_div.data("id");
+                let radio_div = $(this).closest(".radio_div");
+                let radio_id = radio_div.data("id");
+                let band = radio_div.data("band");
+                let graph_class = "graph_ap_radio"+radio_id+"_users";
+                let local_key = graph_class+"_"+id;
 
-              if(subject_div.find("."+graph_class).length > 0) {
-                subject_div.find("."+graph_class).find(".close").trigger("click");
-                return;
-              };
+                if(subject_div.find("."+graph_class).length > 0) {
+                  subject_div.find("."+graph_class).find(".close").trigger("click");
+                  return;
+                };
 
-              let graph_keys={};
-              graph_keys["r_users_"+radio_id] = {
-                "_order": 1,
-                "label": "Пользователи "+band,
-                "color": "blue",
-                "borderColor": "blue",
-                "borderWidth": 1,
-                "backgroundColor": "blue",
-                "yAxisID": "y",
-              };
+                let graph_keys={};
+                graph_keys["r_users_"+radio_id] = {
+                  "_order": 1,
+                  "label": "Пользователи "+band,
+                  "color": "blue",
+                  "borderColor": "blue",
+                  "borderWidth": 1,
+                  "backgroundColor": "blue",
+                  "yAxisID": "y",
+                };
 
-              let graph_options={
-                "options": {
-                  "scales": {
-                    "y": {
-                      "type": "linear",
-                      "display": true,
-                      "position": "left",
+                let graph_options={
+                  "options": {
+                    "scales": {
+                      "y": {
+                        "type": "linear",
+                        "display": true,
+                        "position": "left",
+                      },
                     },
                   },
-                },
-              };
+                };
 
 
-              let graph_div=get_graph_div('Пользователи '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
-               .css({"background-color": "white"})
-               .appendTo(info_div)
-              ;
-              graph_div.find(".refresh").trigger("click");
-              save_local(local_key, true);
-            })
-          )
-          .append( $(SPAN).addClass("min1em") )
-          .append( $(LABEL).text("Counters: ") )
-          .append( $(LABEL).text("ACKF: ").title("ACK fail") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_ack_fail_cnt"])).title("ACK fail") )
-          .append( $(LABEL).text("d11F: ").title(".11 Fail") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_d11_fail_cnt"])).title(".11 Fail") )
-          .append( $(LABEL).text("DUP: ").title("Duplicates") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_dup_cnt"])).title("Duplicates") )
-          .append( $(LABEL).text("FCSE: ").title("FCS errors") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_fcs_error_cnt"])).title("FCS errors") )
-          .append( $(LABEL).text("RETR: ").title("Retries") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_retry_cnt"])).title("Retries") )
-          .append( $(LABEL).text("RTSF: ").title("RTS Fail") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_fail_cnt"])).title("RTS Fail") )
-          .append( $(LABEL).text("RTSS: ").title("RTS Success") )
-          .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_succ_cnt"])).title("RTS Success") )
-          .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
-            .addClass("ui-icon").addClass("ui-icon-chart-line")
-            .addClass("button").addClass("button_graph_r_counters"+r)
-            .click(function() {
-              let subject_div = $(this).closest(".ap_div");
-              let info_div = subject_div.find(".ap_head_div").find(".info_div");
-              let id = subject_div.data("id");
-              let radio_div = $(this).closest(".radio_div");
-              let radio_id = radio_div.data("id");
-              let band = radio_div.data("band");
-              let graph_class = "graph_ap_radio"+radio_id+"_counters";
-              let local_key = graph_class+"_"+id;
+                let graph_div=get_graph_div('Пользователи '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
+                 .css({"background-color": "white"})
+                 .appendTo(info_div)
+                ;
+                graph_div.find(".refresh").trigger("click");
+                save_local(local_key, true);
+              })
+            )
+            .append( $(SPAN).addClass("min1em") )
+            .append( $(LABEL).text("Counters: ") )
+            .append( $(LABEL).text("ACKF: ").title("ACK fail") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_ack_fail_cnt"])).title("ACK fail") )
+            .append( $(LABEL).text("d11F: ").title(".11 Fail") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_d11_fail_cnt"])).title(".11 Fail") )
+            .append( $(LABEL).text("DUP: ").title("Duplicates") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_dup_cnt"])).title("Duplicates") )
+            .append( $(LABEL).text("FCSE: ").title("FCS errors") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_fcs_error_cnt"])).title("FCS errors") )
+            .append( $(LABEL).text("RETR: ").title("Retries") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_retry_cnt"])).title("Retries") )
+            .append( $(LABEL).text("RTSF: ").title("RTS Fail") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_fail_cnt"])).title("RTS Fail") )
+            .append( $(LABEL).text("RTSS: ").title("RTS Success") )
+            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_succ_cnt"])).title("RTS Success") )
+            .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
+              .addClass("ui-icon").addClass("ui-icon-chart-line")
+              .addClass("button").addClass("button_graph_r_counters"+r)
+              .click(function() {
+                let subject_div = $(this).closest(".ap_div");
+                let info_div = subject_div.find(".ap_head_div").find(".info_div");
+                let id = subject_div.data("id");
+                let radio_div = $(this).closest(".radio_div");
+                let radio_id = radio_div.data("id");
+                let band = radio_div.data("band");
+                let graph_class = "graph_ap_radio"+radio_id+"_counters";
+                let local_key = graph_class+"_"+id;
 
-              if(subject_div.find("."+graph_class).length > 0) {
-                subject_div.find("."+graph_class).find(".close").trigger("click");
-                return;
-              };
+                if(subject_div.find("."+graph_class).length > 0) {
+                  subject_div.find("."+graph_class).find(".close").trigger("click");
+                  return;
+                };
 
-              let graph_keys={};
-              graph_keys["r_ack_fail_cnt_"+radio_id] = {
-                "_order": 1,
-                "label": "ACK Fail",
-                "color": "blue",
-                "borderColor": "blue",
-                "borderWidth": 1,
-                "backgroundColor": "blue",
-                "yAxisID": "y",
-              };
+                let graph_keys={};
+                graph_keys["r_ack_fail_cnt_"+radio_id] = {
+                  "_order": 1,
+                  "label": "ACK Fail",
+                  "color": "blue",
+                  "borderColor": "blue",
+                  "borderWidth": 1,
+                  "backgroundColor": "blue",
+                  "yAxisID": "y",
+                };
 
-              graph_keys["r_d11_fail_cnt_"+radio_id] = {
-                "_order": 2,
-                "label": "Dot11 Fail",
-                "color": "red",
-                "borderColor": "red",
-                "borderWidth": 1,
-                "backgroundColor": "red",
-                "yAxisID": "y",
-              };
-              graph_keys["r_dup_cnt_"+radio_id] = {
-                "_order": 3,
-                "label": "Duplicates",
-                "color": "yellow",
-                "borderColor": "yellow",
-                "borderWidth": 1,
-                "backgroundColor": "yellow",
-                "yAxisID": "y",
-              };
-              graph_keys["r_fcs_error_cnt_"+radio_id] = {
-                "_order": 4,
-                "label": "FCS Error",
-                "color": "darkorange",
-                "borderColor": "darkorange",
-                "borderWidth": 1,
-                "backgroundColor": "darkorange",
-                "yAxisID": "y",
-              };
-              graph_keys["r_retry_cnt_"+radio_id] = {
-                "_order": 5,
-                "label": "Retries",
-                "color": "purple",
-                "borderColor": "purple",
-                "borderWidth": 1,
-                "backgroundColor": "purple",
-                "yAxisID": "y",
-              };
-              graph_keys["r_rts_fail_cnt_"+radio_id] = {
-                "_order": 6,
-                "label": "RTS Fail",
-                "color": "brown",
-                "borderColor": "brown",
-                "borderWidth": 1,
-                "backgroundColor": "brown",
-                "yAxisID": "y",
-              };
-              graph_keys["r_rts_succ_cnt_"+radio_id] = {
-                "_order": 7,
-                "label": "RTS Success",
-                "color": "green",
-                "borderColor": "green",
-                "borderWidth": 1,
-                "backgroundColor": "green",
-                "yAxisID": "y",
-              };
-              let graph_options={
-                "options": {
-                  "scales": {
-                    "y": {
-                      "type": "linear",
-                      "display": true,
-                      "position": "left",
+                graph_keys["r_d11_fail_cnt_"+radio_id] = {
+                  "_order": 2,
+                  "label": "Dot11 Fail",
+                  "color": "red",
+                  "borderColor": "red",
+                  "borderWidth": 1,
+                  "backgroundColor": "red",
+                  "yAxisID": "y",
+                };
+                graph_keys["r_dup_cnt_"+radio_id] = {
+                  "_order": 3,
+                  "label": "Duplicates",
+                  "color": "yellow",
+                  "borderColor": "yellow",
+                  "borderWidth": 1,
+                  "backgroundColor": "yellow",
+                  "yAxisID": "y",
+                };
+                graph_keys["r_fcs_error_cnt_"+radio_id] = {
+                  "_order": 4,
+                  "label": "FCS Error",
+                  "color": "darkorange",
+                  "borderColor": "darkorange",
+                  "borderWidth": 1,
+                  "backgroundColor": "darkorange",
+                  "yAxisID": "y",
+                };
+                graph_keys["r_retry_cnt_"+radio_id] = {
+                  "_order": 5,
+                  "label": "Retries",
+                  "color": "purple",
+                  "borderColor": "purple",
+                  "borderWidth": 1,
+                  "backgroundColor": "purple",
+                  "yAxisID": "y",
+                };
+                graph_keys["r_rts_fail_cnt_"+radio_id] = {
+                  "_order": 6,
+                  "label": "RTS Fail",
+                  "color": "brown",
+                  "borderColor": "brown",
+                  "borderWidth": 1,
+                  "backgroundColor": "brown",
+                  "yAxisID": "y",
+                };
+                graph_keys["r_rts_succ_cnt_"+radio_id] = {
+                  "_order": 7,
+                  "label": "RTS Success",
+                  "color": "green",
+                  "borderColor": "green",
+                  "borderWidth": 1,
+                  "backgroundColor": "green",
+                  "yAxisID": "y",
+                };
+                let graph_options={
+                  "options": {
+                    "scales": {
+                      "y": {
+                        "type": "linear",
+                        "display": true,
+                        "position": "left",
+                      },
                     },
                   },
-                },
-              };
+                };
 
 
-              let graph_div=get_graph_div('Счетчики '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
-               .css({"background-color": "white"})
-               .appendTo(info_div)
-              ;
-              graph_div.find(".refresh").trigger("click");
-              save_local(local_key, true);
-            })
-          )
-          .appendTo(idiv)
-         ;
+                let graph_div=get_graph_div('Счетчики '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
+                 .css({"background-color": "white"})
+                 .appendTo(info_div)
+                ;
+                graph_div.find(".refresh").trigger("click");
+                save_local(local_key, true);
+              })
+            )
+            .appendTo(idiv)
+           ;
+         };
        };
 
        idiv.appendTo(ic);
