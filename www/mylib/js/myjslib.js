@@ -20,6 +20,8 @@ const PRE="<PRE/>";
 const FIELDSET="<FIELDSET/>";
 const LEGEND="<LEGEND/>";
 const CANVAS="<CANVAS/>";
+const UL="<UL/>";
+const LI="<LI/>";
 
 function GMK(bytes) {
   let measure="";
@@ -154,7 +156,7 @@ function ln() {
   return frameRE.exec(stack.shift())[1];
 };
 
-function error_at(message) {
+function error_at(message, full=false) {
   let e = new Error();
   if (!e.stack) try {
     // IE requires the Error to actually be throw or else the Error's 'stack'
@@ -165,6 +167,7 @@ function error_at(message) {
       return 0; // IE < 10, likely
     }
   }
+  let full_stack = e.stack.toString().split(/\r\n|\n/);
   let stack = e.stack.toString().split(/\r\n|\n/);
   // We want our caller's frame. It's index into |stack| depends on the
   // browser and browser version, so we need to search for the second frame:
@@ -173,7 +176,7 @@ function error_at(message) {
     let frame = stack.shift();
   } while (typeof(frame) !== 'undefined' && !frameRE.exec(frame) && stack.length);
 
-  if(message === undefined) message="Program error";
+  if(message === undefined) message="JS Program error";
 
   if(stack.length) {
     stack.shift();
@@ -185,7 +188,7 @@ function error_at(message) {
   } else {
     line=0;
   };
-  error_dialog(message+" at "+line);
+  error_dialog(message+" at "+line+(full?"\n"+full_stack.join("\n"):""));
 };
 function addZero(num) {
   if(num > 9) return num.toString();
@@ -312,7 +315,12 @@ function show_confirm(message,func, opts, cancelfunc) {
   };
   dialog.dialog(d);
 };
-function show_confirm_checkbox(message,func, opts) {
+function show_confirm_checkbox(message,func, opts, skip = false) {
+  if(skip) {
+    func();
+    return;
+  };
+
   let dialog=$(DIV)
    .prop("title", "Подтвердите действие")
    .css("white-space", "pre")
@@ -404,7 +412,65 @@ function login_dialog(message, success_query, success_func) {
 
   dialog.dialog(d);
 };
+
+function auth_check(res) {
+  if(res["ok"] === "noauth") {
+    if(res["auth_url"] != undefined) {
+      //show_dialog("Сеанс завершен по неактивности, пожалуйста, обновите страницу");
+      window.location = res["auth_url"]+encodeURIComponent(window.location);
+    } else {
+      show_dialog("Сеанс завершен по неактивности, пожалуйста, обновите страницу");
+    };
+    return false;
+  } else if(res["ok"]["fail"] === "noaccess") {
+
+    let dialog = $(DIV).title("Отазано в доступе")
+     .addClass("dialog_start")
+     .append( $(DIV)
+       .css({"white-space": "pre"})
+       .text("Вы успешно авторизовались как "+res["ok"]["userinfo"]["name"]+" ("+res["ok"]["userinfo"]["login"]+"),\n"+
+             "но у вас нет прав доступа к данному приложению или запрашиваемым данным.\n"+
+             "Пожалуйста, обратитесь к администрации приложения.\n"+
+             "Если вам уже выдали права доступа, попробуйте обновить страницу."
+       )
+     )
+     .appendTo("BODY")
+    ;
+    let dialog_options = {
+      close: function() {
+        $(this).dialog("destroy");
+        $(this).remove();
+      },
+      modal: true,
+      width: "auto",
+      buttons: [
+        {
+          text: "Войти под другой учетной записью",
+          click: function() {
+            window.location = "/logout";
+          },
+        },
+      ],
+    };
+
+    dialog.dialog(dialog_options);
+
+    return false;
+  };
+
+  return true;
+};
+
 function run_query(query, successfunc) {
+  if(query === undefined) {
+    if(successfunc !== undefined) {
+      successfunc();
+    };
+    return;
+  };
+  if(DEBUG != undefined && DEBUG && debugLog !== undefined) {
+    debugLog("Query: "+jstr(query));
+  };
   $.ajax({
     url: AJAX,
     method: 'POST',
@@ -414,10 +480,11 @@ function run_query(query, successfunc) {
     data: JSON.stringify(query),
     success: function(data) {
       if(data["ok"] != undefined) {
-        if(DEBUG) {
-          $("#debug").text(JSON.stringify(data, null, 2));
+        if(DEBUG != undefined && DEBUG && debugLog !== undefined) {
+          debugLog("Result: "+jstr(data)+"\n");
         };
         if(successfunc != null) {
+          if(!auth_check(data)) return;
           successfunc(data);
         };
         return;
@@ -459,8 +526,38 @@ function has_right(right) {
   return false;
 };
 
+function in_array(list, value) {
+  if(list === undefined) error_at("in_array(): Undefined list", true);
+  if(!Array.isArray(list)) error_at("in_array(): list is not an array: "+typeof(list)+
+    "\n"+jstr(list)+"\n", true
+  );
+  for(let i in list) {
+    if(list[i] == value) return true;
+  };
+  return false;
+};
 
 
 if(typeof AJAX === "undefined") {
   throw("AJAX variable not defined");
+};
+
+function getUrlParameter(sParam, defval) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    };
+    if( defval === undefined) {
+      return false;
+    } else {
+      return defval;
+    };
 };

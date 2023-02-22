@@ -1,0 +1,11 @@
+[Unit]
+Description=Cisco WLCs monitoring service
+After=network-online.target redis.service mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/gowlcd
+
+[Install]
+WantedBy=multi-user.target
