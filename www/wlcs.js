@@ -721,10 +721,10 @@ function get_ap_div(ap_id) {
                 graph_keys["r_rts_fail_cnt_"+radio_id] = {
                   "_order": 6,
                   "label": "RTS Fail",
-                  "color": "brown",
-                  "borderColor": "brown",
+                  "color": "lime",
+                  "borderColor": "lime",
                   "borderWidth": 1,
-                  "backgroundColor": "brown",
+                  "backgroundColor": "lime",
                   "yAxisID": "y",
                 };
                 graph_keys["r_rts_succ_cnt_"+radio_id] = {
@@ -1337,10 +1337,10 @@ function show_mac_events(mac) {
                       "cl_snr": {
                         "_order": 2,
                         "label": "SNR",
-                        "color": "cyan",
-                        "borderColor": "cyan",
+                        "color": "green",
+                        "borderColor": "green",
                         "borderWidth": 1,
-                        "backgroundColor": "cyan",
+                        "backgroundColor": "green",
                         "yAxisID": "y1",
                       },
                     };
@@ -1403,9 +1403,9 @@ function show_mac_events(mac) {
                         "_order": 2,
                         "label": "Байт/с к пользователю",
                         "color": "cyan",
-                        "borderColor": "cyan",
+                        "borderColor": "green",
                         "borderWidth": 1,
-                        "backgroundColor": "cyan",
+                        "backgroundColor": "green",
                         "yAxisID": "y",
                       },
                     };
@@ -1460,10 +1460,10 @@ function show_mac_events(mac) {
                       "cl_pkts_tx": {
                         "_order": 2,
                         "label": "Пакет/с к пользователю",
-                        "color": "cyan",
-                        "borderColor": "cyan",
+                        "color": "green",
+                        "borderColor": "green",
                         "borderWidth": 1,
-                        "backgroundColor": "cyan",
+                        "backgroundColor": "green",
                         "yAxisID": "y",
                       },
                     };
@@ -1509,10 +1509,10 @@ function show_mac_events(mac) {
                       "cl_data_retries": {
                         "_order": 1,
                         "label": "Повторы",
-                        "color": "brown",
-                        "borderColor": "brown",
+                        "color": "blue",
+                        "borderColor": "blue",
                         "borderWidth": 1,
-                        "backgroundColor": "brown",
+                        "backgroundColor": "blue",
                         "yAxisID": "y",
                       },
                       "cl_dup_pkts": {
@@ -1792,10 +1792,10 @@ function get_client_div(client_id) {
          "cl_snr": {
            "_order": 2,
            "label": "SNR",
-           "color": "cyan",
-           "borderColor": "cyan",
+           "color": "green",
+           "borderColor": "green",
            "borderWidth": 1,
-           "backgroundColor": "cyan",
+           "backgroundColor": "green",
            "yAxisID": "y1",
          },
        };
@@ -2004,10 +2004,10 @@ function get_client_div(client_id) {
          "cl_bytes_tx": {
            "_order": 2,
            "label": "Байт/с к пользователю",
-           "color": "cyan",
-           "borderColor": "cyan",
+           "color": "green",
+           "borderColor": "green",
            "borderWidth": 1,
-           "backgroundColor": "cyan",
+           "backgroundColor": "green",
            "yAxisID": "y",
          },
        };
@@ -2067,10 +2067,10 @@ function get_client_div(client_id) {
          "cl_pkts_tx": {
            "_order": 2,
            "label": "Пакет/с к пользователю",
-           "color": "cyan",
-           "borderColor": "cyan",
+           "color": "green",
+           "borderColor": "green",
            "borderWidth": 1,
-           "backgroundColor": "cyan",
+           "backgroundColor": "green",
            "yAxisID": "y",
          },
        };
@@ -2123,10 +2123,10 @@ function get_client_div(client_id) {
          "cl_data_retries": {
            "_order": 1,
            "label": "Повторы",
-           "color": "brown",
-           "borderColor": "brown",
+           "color": "blue",
+           "borderColor": "blue",
            "borderWidth": 1,
-           "backgroundColor": "brown",
+           "backgroundColor": "blue",
            "yAxisID": "y",
          },
          "cl_dup_pkts": {
@@ -2426,10 +2426,10 @@ error_at();
                   "auth_clients": {
                     "_order": 2,
                     "label": "Авторизованых",
-                    "color": "cyan",
-                    "borderColor": "cyan",
+                    "color": "green",
+                    "borderColor": "green",
                     "borderWidth": 1,
-                    "backgroundColor": "cyan",
+                    "backgroundColor": "green",
                     "yAxisID": "y",
                   },
                 };
@@ -2488,10 +2488,10 @@ error_at();
                   "duration": {
                     "_order": 2,
                     "label": "Полное время запроса, мс",
-                    "color": "cyan",
-                    "borderColor": "cyan",
+                    "color": "green",
+                    "borderColor": "green",
                     "borderWidth": 1,
-                    "backgroundColor": "cyan",
+                    "backgroundColor": "green",
                     "yAxisID": "y1",
                   },
                 };
