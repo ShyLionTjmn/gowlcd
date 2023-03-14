@@ -127,6 +127,10 @@ func oui(wg *sync.WaitGroup, boot_wg *sync.WaitGroup, stop_ch chan struct{}) {
       }
 
       if red_err == nil {
+        _, red_err = redis.DoWithTimeout(red, time.Duration(config.Options.Redis_timeout)*time.Second, "HSET", "oui_temp", "time", time.Now().String())
+      }
+
+      if red_err == nil {
         _, red_err = redis.DoWithTimeout(red, time.Duration(config.Options.Redis_timeout)*time.Second, "RENAME", "oui_temp", "oui")
       }
 
