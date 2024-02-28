@@ -26,6 +26,7 @@ var globalSites = make(map[uint32]*siteInfo)
 type wlcInfo struct {
   Status string `json:"status"`
   Site string `json:"site"`
+  Type string `json:"type"`
   SiteTags string `json:"site_tags"`
   Netname string `json:"netname"`
   Error string `json:"error"`
@@ -71,6 +72,13 @@ type clientMoveInfo struct {
   Client *clientInfo `json:"client"`
   PrevAP_MAC string  `jsov:"prev_ap_mac"`
   PrevAP_Radio string  `jsov:"prev_ap_radio"`
+}
+
+type ap_RadioInfo struct {
+  Ap *apInfo `json:"ap"`
+  Radio string  `json:"radio"`
+  Prev_channel string  `json:"prev_channel"`
+  New_channel string  `json:"new_channel"`
 }
 
 var globalOui = make(map[string]string)

@@ -55,102 +55,10 @@ var const2str = map[int]string{
   dtExit:       "exit",
 }
 
-var wlc_singles = map[string]string{
-  "host_name": ".1.3.6.1.2.1.1.5.0",
-  "sys_object_id": ".1.3.6.1.2.1.1.2.0",
-  "model": ".1.3.6.1.2.1.47.1.1.1.1.13.1",
-  "software": ".1.3.6.1.2.1.47.1.1.1.1.10.1",
-  "serial": ".1.3.6.1.2.1.47.1.1.1.1.11.1",
-}
-
-var wlc_uint_tables = map[string]string{
-  "ap_uptime":                  ".1.3.6.1.4.1.9.9.513.1.1.1.1.7",
-}
-
-var wlc_hex_tables = map[string]string{
-  "cdp_nei_address":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.8",
-  "ap_mac":                     ".1.3.6.1.4.1.14179.2.2.1.1.1",
-  "cl_mac":                 ".1.3.6.1.4.1.14179.2.1.4.1.1",
-  "cl_ap_mac":              ".1.3.6.1.4.1.14179.2.1.4.1.4",
-}
-
-var wlc_tables = map[string]string{
-  //per AP
-  "ap_name":                    ".1.3.6.1.4.1.14179.2.2.1.1.3",
-  "ap_num_slots":               ".1.3.6.1.4.1.14179.2.2.1.1.2",
-  "ap_ip":                      ".1.3.6.1.4.1.14179.2.2.1.1.19",
-  "ap_model":                   ".1.3.6.1.4.1.14179.2.2.1.1.16",
-  "ap_serial":                  ".1.3.6.1.4.1.14179.2.2.1.1.17",
-  "ap_location":                ".1.3.6.1.4.1.14179.2.2.1.1.4",
-  //per AP radio
-  "r_type":              ".1.3.6.1.4.1.14179.2.2.2.1.2",
-  "r_state":             ".1.3.6.1.4.1.14179.2.2.2.1.12",
-  "r_channel":           ".1.3.6.1.4.1.14179.2.2.2.1.4",
-  "r_power":             ".1.3.6.1.4.1.14179.2.2.2.1.6",
-  "r_users":             ".1.3.6.1.4.1.14179.2.2.2.1.15",
-  "r_retry_cnt":        ".1.3.6.1.4.1.14179.2.2.6.1.3",
-  "r_dup_cnt":          ".1.3.6.1.4.1.14179.2.2.6.1.5",
-  "r_rts_succ_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.6",
-  "r_rts_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.7",
-  "r_ack_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.8",
-  "r_fcs_error_cnt":    ".1.3.6.1.4.1.14179.2.2.6.1.11",
-  "r_d11_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.33",
-  //per AP nei
-  "cdp_nei_name":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.6",
-  "cdp_nei_address_type":    ".1.3.6.1.4.1.9.9.623.1.3.1.1.7",
-  "cdp_nei_if_name":         ".1.3.6.1.4.1.9.9.623.1.3.1.1.9",
-  "cdp_nei_if_speed":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.16",
-  "cdp_nei_platform":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.12",
-  "cdp_nei_caps":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.13",
-  //wlc
-  "wlc_ssid":                   ".1.3.6.1.4.1.14179.2.1.1.1.2",
-  //clients
-  "cl_ip":                  ".1.3.6.1.4.1.14179.2.1.4.1.2",
-  "cl_user":                ".1.3.6.1.4.1.14179.2.1.4.1.3",
-  "cl_ap_radio":            ".1.3.6.1.4.1.14179.2.1.4.1.5",
-  "cl_ssid":                ".1.3.6.1.4.1.14179.2.1.4.1.6",
-  "cl_status":              ".1.3.6.1.4.1.14179.2.1.4.1.9",
-  //"cl_auth_algo":           ".1.3.6.1.4.1.14179.2.1.4.1.19", //useless
-  "cl_pol_state":           ".1.3.6.1.4.1.14179.2.1.4.1.23",
-  "cl_pol_status":          ".1.3.6.1.4.1.14179.2.1.4.1.24", //0 - authenticated, 1 - not authenticated
-  "cl_radio":               ".1.3.6.1.4.1.14179.2.1.4.1.25",
-  "cl_int":                 ".1.3.6.1.4.1.14179.2.1.4.1.27",
-  "cl_vlan":                ".1.3.6.1.4.1.14179.2.1.4.1.29",
-  "cl_pol_type":            ".1.3.6.1.4.1.14179.2.1.4.1.30",
-  "cl_cypher":              ".1.3.6.1.4.1.14179.2.1.4.1.31",
-  "cl_eap_type":            ".1.3.6.1.4.1.14179.2.1.4.1.32",
-  "cl_rssi":                ".1.3.6.1.4.1.14179.2.1.6.1.1",
-  "cl_bytes_rx":            ".1.3.6.1.4.1.14179.2.1.6.1.2",
-  "cl_bytes_tx":            ".1.3.6.1.4.1.14179.2.1.6.1.3",
-  "cl_pol_errors":          ".1.3.6.1.4.1.14179.2.1.6.1.4",
-  "cl_pkts_rx":             ".1.3.6.1.4.1.14179.2.1.6.1.5",
-  "cl_pkts_tx":             ".1.3.6.1.4.1.14179.2.1.6.1.6",
-  "cl_snr":                 ".1.3.6.1.4.1.14179.2.1.6.1.26",
-  "cl_data_retries":        ".1.3.6.1.4.1.9.9.599.1.4.1.1.1",
-  "cl_dup_pkts":            ".1.3.6.1.4.1.9.9.599.1.4.1.1.3",
-  "cl_uptime":              ".1.3.6.1.4.1.9.9.599.1.3.1.1.15",
-  "cl_rate":                ".1.3.6.1.4.1.9.9.599.1.3.1.1.17",
-}
-
-var ap_graph_keys_g = [...]string{"ap_uptime"}
-var ap_graph_radio_keys_g = [...]string{"r_state", "r_users"}
-var ap_graph_radio_keys_c = [...]string{"r_ack_fail_cnt", "r_d11_fail_cnt", "r_dup_cnt", "r_fcs_error_cnt", "r_retry_cnt", "r_rts_fail_cnt", "r_rts_succ_cnt"}
-
-var client_graph_keys_g = [...]string{"cl_uptime", "cl_rssi", "cl_snr"}
-var client_graph_keys_c = [...]string{"cl_bytes_rx", "cl_bytes_tx", "cl_data_retries", "cl_dup_pkts", "cl_pkts_rx", "cl_pkts_tx"}
-
-var wlc_graph_keys_g = [...]string{"delay", "duration", "aps", "clients", "auth_clients"}
-
 func dump(data interface{}){
     b,_:=json.MarshalIndent(data, "", "  ")
     fmt.Print(string(b))
 }
-
-var ap_keys = make([]string, 0)
-var ap_radio_keys = make([]string, 0)
-var ap_cdp_keys = make([]string, 0)
-var client_keys = make([]string, 0)
-var wlc_keys = make([]string, 0)
 
 type histLogEntry struct {
   Type string
@@ -160,51 +68,17 @@ type histLogEntry struct {
   Info string
 }
 
+var ap_keys_reg *regexp.Regexp
+var ap_radio_keys_reg *regexp.Regexp
+var ap_cdp_keys_reg *regexp.Regexp
+var client_keys_reg *regexp.Regexp
+
 func init() {
-  ap_keys_reg := regexp.MustCompile("^ap_")
-  ap_radio_keys_reg := regexp.MustCompile("^r_")
-  ap_cdp_keys_reg := regexp.MustCompile("^cdp_")
-  client_keys_reg := regexp.MustCompile("^cl_")
+  ap_keys_reg = regexp.MustCompile("^ap_")
+  ap_radio_keys_reg = regexp.MustCompile("^r_")
+  ap_cdp_keys_reg = regexp.MustCompile("^cdp_")
+  client_keys_reg = regexp.MustCompile("^cl_")
 
-  for key, _ := range wlc_singles {
-    wlc_keys = append(wlc_keys, key)
-  }
-
-  for key, _ := range wlc_uint_tables {
-    if ap_cdp_keys_reg.MatchString(key) {
-      ap_cdp_keys = append(ap_cdp_keys, key)
-    } else if ap_radio_keys_reg.MatchString(key) {
-      ap_radio_keys = append(ap_radio_keys, key)
-    } else if ap_keys_reg.MatchString(key) {
-      ap_keys = append(ap_keys, key)
-    } else if client_keys_reg.MatchString(key) {
-      client_keys = append(client_keys, key)
-    }
-  }
-
-  for key, _ := range wlc_hex_tables {
-    if ap_cdp_keys_reg.MatchString(key) {
-      ap_cdp_keys = append(ap_cdp_keys, key)
-    } else if ap_radio_keys_reg.MatchString(key) {
-      ap_radio_keys = append(ap_radio_keys, key)
-    } else if ap_keys_reg.MatchString(key) {
-      ap_keys = append(ap_keys, key)
-    } else if client_keys_reg.MatchString(key) {
-      client_keys = append(client_keys, key)
-    }
-  }
-
-  for key, _ := range wlc_tables {
-    if ap_cdp_keys_reg.MatchString(key) {
-      ap_cdp_keys = append(ap_cdp_keys, key)
-    } else if ap_radio_keys_reg.MatchString(key) {
-      ap_radio_keys = append(ap_radio_keys, key)
-    } else if ap_keys_reg.MatchString(key) {
-      ap_keys = append(ap_keys, key)
-    } else if client_keys_reg.MatchString(key) {
-      client_keys = append(client_keys, key)
-    }
-  }
 
 }
 
@@ -288,7 +162,271 @@ func get_netname(ip string) string {
   return "nosite"
 }
 
-func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
+var cisco_wlc_singles = map[string]string{
+  "host_name": ".1.3.6.1.2.1.1.5.0",
+  "sys_object_id": ".1.3.6.1.2.1.1.2.0",
+  "model": ".1.3.6.1.2.1.47.1.1.1.1.13.1",
+  "software": ".1.3.6.1.2.1.47.1.1.1.1.10.1",
+  "serial": ".1.3.6.1.2.1.47.1.1.1.1.11.1",
+}
+
+var cisco_wlc_uint_tables = map[string]string{
+  "ap_uptime":                  ".1.3.6.1.4.1.9.9.513.1.1.1.1.7",
+}
+
+var cisco_wlc_hex_tables = map[string]string{
+  "cdp_nei_address":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.8",
+  "ap_mac":                     ".1.3.6.1.4.1.14179.2.2.1.1.1",
+  "cl_mac":                 ".1.3.6.1.4.1.14179.2.1.4.1.1",
+  "cl_ap_mac":              ".1.3.6.1.4.1.14179.2.1.4.1.4",
+}
+
+var cisco_wlc_tables = map[string]string{
+  //per AP
+  "ap_name":                    ".1.3.6.1.4.1.14179.2.2.1.1.3",
+  "ap_num_slots":               ".1.3.6.1.4.1.14179.2.2.1.1.2",
+  "ap_ip":                      ".1.3.6.1.4.1.14179.2.2.1.1.19",
+  "ap_model":                   ".1.3.6.1.4.1.14179.2.2.1.1.16",
+  "ap_serial":                  ".1.3.6.1.4.1.14179.2.2.1.1.17",
+  "ap_location":                ".1.3.6.1.4.1.14179.2.2.1.1.4",
+  //per AP radio
+  "r_type":              ".1.3.6.1.4.1.14179.2.2.2.1.2",
+  "r_state":             ".1.3.6.1.4.1.14179.2.2.2.1.12",
+  "r_channel":           ".1.3.6.1.4.1.14179.2.2.2.1.4",
+  "r_power":             ".1.3.6.1.4.1.14179.2.2.2.1.6",
+  "r_users":             ".1.3.6.1.4.1.14179.2.2.2.1.15",
+  "r_retry_cnt":        ".1.3.6.1.4.1.14179.2.2.6.1.3",
+  "r_dup_cnt":          ".1.3.6.1.4.1.14179.2.2.6.1.5",
+  "r_rts_succ_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.6",
+  "r_rts_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.7",
+  "r_ack_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.8",
+  "r_fcs_error_cnt":    ".1.3.6.1.4.1.14179.2.2.6.1.11",
+  "r_d11_fail_cnt":     ".1.3.6.1.4.1.14179.2.2.6.1.33",
+  //per AP nei
+  "cdp_nei_name":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.6",
+  "cdp_nei_address_type":    ".1.3.6.1.4.1.9.9.623.1.3.1.1.7",
+  "cdp_nei_if_name":         ".1.3.6.1.4.1.9.9.623.1.3.1.1.9",
+  "cdp_nei_if_speed":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.16",
+  "cdp_nei_platform":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.12",
+  "cdp_nei_caps":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.13",
+  //wlc
+  "wlc_ssid":                   ".1.3.6.1.4.1.14179.2.1.1.1.2",
+  //clients
+  "cl_ip":                  ".1.3.6.1.4.1.14179.2.1.4.1.2",
+  "cl_user":                ".1.3.6.1.4.1.14179.2.1.4.1.3",
+  "cl_ap_radio":            ".1.3.6.1.4.1.14179.2.1.4.1.5",
+  "cl_ssid":                ".1.3.6.1.4.1.14179.2.1.4.1.7",
+  "cl_status":              ".1.3.6.1.4.1.14179.2.1.4.1.9",
+  //"cl_auth_algo":           ".1.3.6.1.4.1.14179.2.1.4.1.19", //useless
+  "cl_pol_state":           ".1.3.6.1.4.1.14179.2.1.4.1.23",
+  "cl_pol_status":          ".1.3.6.1.4.1.14179.2.1.4.1.24", //0 - authenticated, 1 - not authenticated
+  "cl_radio":               ".1.3.6.1.4.1.14179.2.1.4.1.25",
+  "cl_int":                 ".1.3.6.1.4.1.14179.2.1.4.1.27",
+  "cl_vlan":                ".1.3.6.1.4.1.14179.2.1.4.1.29",
+  "cl_pol_type":            ".1.3.6.1.4.1.14179.2.1.4.1.30",
+  "cl_cypher":              ".1.3.6.1.4.1.14179.2.1.4.1.31",
+  "cl_eap_type":            ".1.3.6.1.4.1.14179.2.1.4.1.32",
+  "cl_rssi":                ".1.3.6.1.4.1.14179.2.1.6.1.1",
+  "cl_bytes_rx":            ".1.3.6.1.4.1.14179.2.1.6.1.2",
+  "cl_bytes_tx":            ".1.3.6.1.4.1.14179.2.1.6.1.3",
+  "cl_pol_errors":          ".1.3.6.1.4.1.14179.2.1.6.1.4",
+  "cl_pkts_rx":             ".1.3.6.1.4.1.14179.2.1.6.1.5",
+  "cl_pkts_tx":             ".1.3.6.1.4.1.14179.2.1.6.1.6",
+  "cl_snr":                 ".1.3.6.1.4.1.14179.2.1.6.1.26",
+  "cl_data_retries":        ".1.3.6.1.4.1.9.9.599.1.4.1.1.1",
+  "cl_dup_pkts":            ".1.3.6.1.4.1.9.9.599.1.4.1.1.3",
+  "cl_uptime":              ".1.3.6.1.4.1.9.9.599.1.3.1.1.15",
+  "cl_rate":                ".1.3.6.1.4.1.9.9.599.1.3.1.1.17",
+}
+
+var huawei_wlc_singles = map[string]string{
+  "host_name": ".1.3.6.1.2.1.1.5.0",
+  "sys_object_id": ".1.3.6.1.2.1.1.2.0",
+  "model": ".1.3.6.1.2.1.47.1.1.1.1.7.3",
+  "software": ".1.3.6.1.2.1.47.1.1.1.1.10.3",
+  "serial": ".1.3.6.1.2.1.47.1.1.1.1.11.9",
+}
+
+var huawei_wlc_uint_tables = map[string]string{
+  "ap_uptime":                  ".1.3.6.1.4.1.2011.6.139.13.3.3.1.18",
+}
+
+var huawei_wlc_hex_tables = map[string]string{
+  //"cdp_nei_address":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.8",
+  "ap_mac":                     ".1.3.6.1.4.1.2011.6.139.13.3.3.1.39",
+  //"cl_mac":                 ".1.3.6.1.4.1.14179.2.1.4.1.1",
+  "cl_ap_mac":              ".1.3.6.1.4.1.2011.6.139.18.1.2.1.3",
+}
+
+var huawei_wlc_tables = map[string]string{
+  //per AP
+  "ap_name":                    ".1.3.6.1.4.1.2011.6.139.13.3.3.1.4",
+
+  //"ap_num_slots":               ".1.3.6.1.4.1.14179.2.2.1.1.2",
+  "ap_ip":                      ".1.3.6.1.4.1.2011.6.139.13.3.3.1.13",
+  "ap_model":                   ".1.3.6.1.4.1.2011.6.139.13.3.3.1.3",
+  "ap_serial":                  ".1.3.6.1.4.1.2011.6.139.13.3.3.1.2",
+  "ap_ap_id":                  ".1.3.6.1.4.1.2011.6.139.13.3.3.1.67",
+  //"ap_location":                ".1.3.6.1.4.1.14179.2.2.1.1.4",
+  //per AP radio
+  "r_type":              ".1.3.6.1.4.1.2011.6.139.16.1.2.1.5",
+  "r_state":             ".1.3.6.1.4.1.2011.6.139.16.1.2.1.6",
+  "r_channel":           ".1.3.6.1.4.1.2011.6.139.16.1.2.1.7",
+  "r_power":             ".1.3.6.1.4.1.2011.6.139.16.1.2.1.45",
+  "r_users":             ".1.3.6.1.4.1.2011.6.139.16.1.2.1.40",
+  "r_retry_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.49",
+  "r_rx_f_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.30",
+  "r_rx_err_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.50",
+  "r_rx_drp_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.51",
+  "r_rx_b_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.31",
+  "r_tx_f_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.35",
+  "r_tx_b_cnt":        ".1.3.6.1.4.1.2011.6.139.16.1.2.1.36",
+  //per AP nei
+  //"cdp_nei_name":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.6",
+  //"cdp_nei_address_type":    ".1.3.6.1.4.1.9.9.623.1.3.1.1.7",
+  //"cdp_nei_if_name":         ".1.3.6.1.4.1.9.9.623.1.3.1.1.9",
+  //"cdp_nei_if_speed":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.16",
+  //"cdp_nei_platform":        ".1.3.6.1.4.1.9.9.623.1.3.1.1.12",
+  //"cdp_nei_caps":            ".1.3.6.1.4.1.9.9.623.1.3.1.1.13",
+  //wlc
+  "wlc_ssid":                   ".1.3.6.1.4.1.2011.6.139.11.1.21.1.2",
+
+  // index is "number_of_chars_in_ap_model"."ap_model.ascii.chars"
+  // 16.65.105.114.69.110.103.105.110.101.53.55.54.49.45.50.49 for AirEngine5761-21
+  "wlc_ap_num_slots_base":          ".1.3.6.1.4.1.2011.6.139.13.2.1.1.4",
+
+  //clients
+  "cl_ip":                  ".1.3.6.1.4.1.2011.6.139.18.1.2.1.25",
+  "cl_user":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.2",
+  "cl_ap_radio":            ".1.3.6.1.4.1.2011.6.139.18.1.2.1.6",
+  "cl_ssid":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.18",
+  "cl_status":              ".1.3.6.1.4.1.2011.6.139.18.1.2.1.19",
+  //"cl_pol_state":           ".1.3.6.1.4.1.14179.2.1.4.1.23",
+  //"cl_pol_status":          ".1.3.6.1.4.1.14179.2.1.4.1.24", //0 - authenticated, 1 - not authenticated
+  "cl_radio":               ".1.3.6.1.4.1.2011.6.139.18.1.2.1.10",
+  "cl_radio_band":          ".1.3.6.1.4.1.2011.6.139.18.1.2.1.7",
+  //"cl_int":                 ".1.3.6.1.4.1.14179.2.1.4.1.27",
+  "cl_vlan":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.24",
+  "cl_pol_type":            ".1.3.6.1.4.1.2011.6.139.18.1.2.1.20",
+  "cl_cypher":              ".1.3.6.1.4.1.2011.6.139.18.1.2.1.21",
+  //"cl_eap_type":            ".1.3.6.1.4.1.14179.2.1.4.1.32",
+  "cl_rssi":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.42",
+  "cl_bytes_rx":            ".1.3.6.1.4.1.2011.6.139.18.1.2.1.34",
+  "cl_bytes_tx":            ".1.3.6.1.4.1.2011.6.139.18.1.2.1.37",
+  "cl_pkts_rx":             ".1.3.6.1.4.1.2011.6.139.18.1.2.1.33",
+  "cl_pkts_tx":             ".1.3.6.1.4.1.2011.6.139.18.1.2.1.36",
+  "cl_snr":                 ".1.3.6.1.4.1.2011.6.139.18.1.2.1.44",
+  "cl_p_data_retries":        ".1.3.6.1.4.1.2011.6.139.18.1.2.1.40",
+  "cl_p_drp_pkts":            ".1.3.6.1.4.1.2011.6.139.18.1.2.1.39",
+  "cl_uptime":              ".1.3.6.1.4.1.2011.6.139.18.1.2.1.30",
+  "cl_rx_rate":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.14",
+  "cl_tx_rate":                ".1.3.6.1.4.1.2011.6.139.18.1.2.1.15",
+}
+
+var cisco_ap_graph_keys_g = [...]string{"ap_uptime"}
+var cisco_ap_graph_radio_keys_g = [...]string{"r_state", "r_users"}
+var cisco_ap_graph_radio_keys_c = [...]string{"r_ack_fail_cnt", "r_d11_fail_cnt", "r_dup_cnt", "r_fcs_error_cnt", "r_retry_cnt", "r_rts_fail_cnt", "r_rts_succ_cnt"}
+
+var cisco_client_graph_keys_g = [...]string{"cl_uptime", "cl_rssi", "cl_snr"}
+var cisco_client_graph_keys_c = [...]string{"cl_bytes_rx", "cl_bytes_tx", "cl_data_retries", "cl_dup_pkts", "cl_pkts_rx", "cl_pkts_tx"}
+
+var cisco_wlc_graph_keys_g = [...]string{"delay", "duration", "aps", "clients", "auth_clients"}
+
+var huawei_ap_graph_keys_g = [...]string{"ap_uptime"}
+var huawei_ap_graph_radio_keys_g = [...]string{"r_state", "r_users"}
+var huawei_ap_graph_radio_keys_c = [...]string{"r_rx_f_cnt", "r_rx_err_cnt", "r_rx_drp_cnt", "r_rx_b_cnt", "r_tx_f_cnt", "r_tx_b_cnt", "r_retry_cnt"}
+
+var huawei_client_graph_keys_g = [...]string{"cl_uptime", "cl_rssi", "cl_snr", "cl_p_data_retries", "cl_p_drp_pkts"}
+var huawei_client_graph_keys_c = [...]string{"cl_bytes_rx", "cl_bytes_tx", "cl_pkts_rx", "cl_pkts_tx"}
+
+var huawei_wlc_graph_keys_g = [...]string{"delay", "duration", "aps", "clients", "auth_clients"}
+
+func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}, wlc conf_wlcs) {
+  var wlc_singles map[string]string
+  var wlc_uint_tables map[string]string
+  var wlc_hex_tables map[string]string
+  var wlc_tables map[string]string
+
+  var ap_graph_keys_g []string
+  var ap_graph_radio_keys_g []string
+  var ap_graph_radio_keys_c []string
+
+  var client_graph_keys_g []string
+  var client_graph_keys_c []string
+
+  var wlc_graph_keys_g []string
+
+  if wlc.Type == "cisco" {
+    wlc_singles = cisco_wlc_singles
+    wlc_uint_tables = cisco_wlc_uint_tables
+    wlc_hex_tables = cisco_wlc_hex_tables
+    wlc_tables = cisco_wlc_tables
+
+    ap_graph_keys_g = cisco_ap_graph_keys_g[:]
+    ap_graph_radio_keys_g = cisco_ap_graph_radio_keys_g[:]
+    ap_graph_radio_keys_c = cisco_ap_graph_radio_keys_c[:]
+    client_graph_keys_g = cisco_client_graph_keys_g[:]
+    client_graph_keys_c = cisco_client_graph_keys_c[:]
+    wlc_graph_keys_g = cisco_wlc_graph_keys_g[:]
+  } else if wlc.Type == "huawei" {
+    wlc_singles = huawei_wlc_singles
+    wlc_uint_tables = huawei_wlc_uint_tables
+    wlc_hex_tables = huawei_wlc_hex_tables
+    wlc_tables = huawei_wlc_tables
+
+    ap_graph_keys_g = huawei_ap_graph_keys_g[:]
+    ap_graph_radio_keys_g = huawei_ap_graph_radio_keys_g[:]
+    ap_graph_radio_keys_c = huawei_ap_graph_radio_keys_c[:]
+    client_graph_keys_g = huawei_client_graph_keys_g[:]
+    client_graph_keys_c = huawei_client_graph_keys_c[:]
+    wlc_graph_keys_g = huawei_wlc_graph_keys_g[:]
+  }
+
+  var ap_keys = make([]string, 0)
+  var ap_radio_keys = make([]string, 0)
+  var ap_cdp_keys = make([]string, 0)
+  var client_keys = make([]string, 0)
+  var wlc_keys = make([]string, 0)
+
+  for key, _ := range wlc_singles {
+    wlc_keys = append(wlc_keys, key)
+  }
+
+  for key, _ := range wlc_uint_tables {
+    if ap_cdp_keys_reg.MatchString(key) {
+      ap_cdp_keys = append(ap_cdp_keys, key)
+    } else if ap_radio_keys_reg.MatchString(key) {
+      ap_radio_keys = append(ap_radio_keys, key)
+    } else if ap_keys_reg.MatchString(key) {
+      ap_keys = append(ap_keys, key)
+    } else if client_keys_reg.MatchString(key) {
+      client_keys = append(client_keys, key)
+    }
+  }
+
+  for key, _ := range wlc_hex_tables {
+    if ap_cdp_keys_reg.MatchString(key) {
+      ap_cdp_keys = append(ap_cdp_keys, key)
+    } else if ap_radio_keys_reg.MatchString(key) {
+      ap_radio_keys = append(ap_radio_keys, key)
+    } else if ap_keys_reg.MatchString(key) {
+      ap_keys = append(ap_keys, key)
+    } else if client_keys_reg.MatchString(key) {
+      client_keys = append(client_keys, key)
+    }
+  }
+
+  for key, _ := range wlc_tables {
+    if ap_cdp_keys_reg.MatchString(key) {
+      ap_cdp_keys = append(ap_cdp_keys, key)
+    } else if ap_radio_keys_reg.MatchString(key) {
+      ap_radio_keys = append(ap_radio_keys, key)
+    } else if ap_keys_reg.MatchString(key) {
+      ap_keys = append(ap_keys, key)
+    } else if client_keys_reg.MatchString(key) {
+      client_keys = append(client_keys, key)
+    }
+  }
   var err error
   var snmp_client *snmp.GoSNMP
 
@@ -407,7 +545,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
         if err != nil {
           if snmp_ok {
             if err.Error() != "Interrupted" {
-              logError("worker: "+dev_ip, "get \""+key+"\" error: "+err.Error())
+              logError("worker: "+dev_ip, "get \""+key+"\", oid: "+oid+", error: "+err.Error())
             }
           }
           snmp_ok = false
@@ -617,6 +755,30 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
           globalAps[ap_global_index].keys_check = 0
         }
 
+        if wlc.Type == "huawei" {
+          _, wlc_ap_num_slots_table_ex := scan_data_tables["wlc_ap_num_slots_base"]
+          _, ap_model_table_ex := scan_data_tables["ap_model"]
+
+          if ap_model_table_ex && wlc_ap_num_slots_table_ex {
+
+            ap_keys = append(ap_keys, "ap_num_slots")
+            scan_data_tables["ap_num_slots"] = make(map[string]string)
+
+            for ap_index, value := range scan_data_tables["ap_model"] {
+              octets := make([]string, 0)
+	            for _, s := range []byte(value) {
+                octets = append(octets, strconv.FormatUint(uint64(s), 10))
+	            }
+              octets_num := strconv.FormatInt(int64(len(octets)), 10)
+              octets = append([]string{octets_num}, octets...)
+              model_key := strings.Join(octets, ".")
+              if ap_num_slots, _ap_num_slots_ex := scan_data_tables["wlc_ap_num_slots_base"][model_key]; _ap_num_slots_ex {
+                scan_data_tables["ap_num_slots"][ap_index] = ap_num_slots
+              }
+            }
+          }
+        }
+
         for _, key := range ap_keys {
           if _, key_exists := scan_data_tables[key]; key_exists {
             for ap_index, value := range scan_data_tables[key] {
@@ -679,6 +841,36 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
 
      //clients
 
+     if wlc.Type == "huawei" {
+       if _, cl_ap_mac_table_exists := scan_data_tables["cl_ap_mac"]; cl_ap_mac_table_exists {
+         scan_data_tables["cl_mac"] = make(map[string]string)
+         for cl_oid, _ := range scan_data_tables["cl_ap_mac"] {
+           octets := strings.Split(cl_oid, ".")
+           if len(octets) == 6 {
+             cl_mac := ""
+             for _, o := range octets {
+               o_i, _ := strconv.ParseInt(o, 10, 64)
+               cl_mac = cl_mac + fmt.Sprintf("%02x", o_i)
+             }
+             scan_data_tables["cl_mac"][cl_oid] = cl_mac
+           }
+         }
+       }
+       if _, cl_snr_table_ex := scan_data_tables["cl_snr"]; cl_snr_table_ex {
+         for cl_oid, value := range scan_data_tables["cl_snr"] {
+           v_i, _ := strconv.ParseInt(value, 10, 64)
+           if v_i == 0x7FFFFFFF {
+             v_i = 100
+           } else if v_i == 0x7FFFFFFE {
+             v_i = 0
+           } else {
+             v_i = v_i / 100
+           }
+           scan_data_tables["cl_snr"][cl_oid] = strconv.FormatInt(v_i, 10)
+         }
+       }
+     }
+
       if _, mac_table_exists := scan_data_tables["cl_mac"]; mac_table_exists {
         for _, client_mac := range scan_data_tables["cl_mac"] {
           client_global_index := client_mac+"@"+dev_ip
@@ -733,6 +925,15 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
           } else {
             globalClients[client_index].RRD_file = true
           }
+
+          client_authenticated := false
+
+          if wlc.Type == "cisco" {
+            client_authenticated = (client.Attrs["cl_pol_status"] == "0")
+          } else if wlc.Type == "huawei" {
+            client_authenticated = (client.Attrs["cl_status"] == "3")
+          }
+
           if client.check != now {
             //client gone
             // TODO: log this event (queue for logging after unlock)
@@ -743,7 +944,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
                 json = []byte("json_error")
               }
               hist_log = append(hist_log, histLogEntry{ "mac", "disconnect", client.Mac, now, string(json) })
-              if client.Attrs["cl_user"] != "" && client.Attrs["cl_pol_status"] == "0" {
+              if client.Attrs["cl_user"] != "" && client_authenticated {
                 hist_log = append(hist_log, histLogEntry{ "user", "disconnect", client.Attrs["cl_user"], now, string(json) })
               }
             }
@@ -765,7 +966,8 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
           } else {
 
             client.Mac_info = make([]macInfo, 0)
-            client.Attrs["cl_ssid_name"] = ""
+            //client.Attrs["cl_ssid_name"] = ""
+            client.Attrs["cl_wlc_type"] = wlc.Type
 
             //find out client's possible username
             if _, ok := globalMacInfo[ client.Mac ]; ok {
@@ -774,10 +976,22 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
               reprint.FromTo(globalMacInfo[ client.Mac ], &client.Mac_info)
             }
 
-            //find out client's possible SSID name
-            if v2, ok2 := globalWlcs[ dev_ip ].Ssids[ client.Attrs["cl_ssid"] ]; ok2 {
-              client.Attrs["cl_ssid_name"] = v2
+            /*
+            if wlc.Type == "cisco" {
+              //find out client's possible SSID name
+              if v2, ok2 := globalWlcs[ dev_ip ].Ssids[ client.Attrs["cl_ssid"] ]; ok2 {
+                client.Attrs["cl_ssid_name"] = v2
+              }
+            } else if wlc.Type == "huawei" {
+              client.Attrs["cl_ssid_name"] = client.Attrs["cl_ssid"]
+              cl_ssid_octets := make([]string, 0)
+              for _, o := range []byte(client.Attrs["cl_ssid"]) {
+                cl_ssid_octets = append(cl_ssid_octets, strconv.FormatUint(uint64(o), 10))
+              }
+              cl_ssid_octets = append([]string{ strconv.FormatInt(int64(len(cl_ssid_octets)), 10) }, cl_ssid_octets...)
+              client.Attrs["cl_ssid"] = strings.Join(cl_ssid_octets, ".")
             }
+            */
 
             //find out client's site
 
@@ -806,7 +1020,7 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
                   json = []byte("json_error")
                 }
                 hist_log = append(hist_log, histLogEntry{ "mac", "connect", client.Mac, now, string(json) })
-                if client.Attrs["cl_user"] != "" && client.Attrs["cl_pol_status"] == "0" {
+                if client.Attrs["cl_user"] != "" && client_authenticated {
                   hist_log = append(hist_log, histLogEntry{ "user", "connect", client.Attrs["cl_user"], now, string(json) })
                 }
               } else {
@@ -822,17 +1036,27 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
                       json = []byte("json_error")
                     }
                     hist_log = append(hist_log, histLogEntry{ "mac", "roam", client.Mac, now, string(json) })
-                    if client.Attrs["cl_user"] != "" && client.Attrs["cl_pol_status"] == "0" {
+                    if client.Attrs["cl_user"] != "" && client_authenticated {
                       hist_log = append(hist_log, histLogEntry{ "user", "roam", client.Attrs["cl_user"], now, string(json) })
                     }
                   }
-                  if client.Attrs["cl_pol_status"] != prev_client.Attrs["cl_pol_status"] {
+
+                  prev_client_authenticated := false
+                  if _, type_ex := prev_client.Attrs["cl_wlc_type"]; type_ex {
+                    if prev_client.Attrs["cl_wlc_type"] == "cisco" {
+                      prev_client_authenticated = (prev_client.Attrs["cl_pol_status"] == "0")
+                    } else if prev_client.Attrs["cl_wlc_type"] == "huawei" {
+                      prev_client_authenticated = (prev_client.Attrs["cl_status"] == "3")
+                    }
+                  }
+
+                  if prev_client_authenticated != client_authenticated {
                     json, jerr := json.MarshalIndent(client, "", "\t")
                     if jerr != nil {
                       json = []byte("json_error")
                     }
                     hist_log = append(hist_log, histLogEntry{ "mac", "auth", client.Mac, now, string(json) })
-                    if client.Attrs["cl_user"] != "" && client.Attrs["cl_pol_status"] == "0" {
+                    if client.Attrs["cl_user"] != "" && client_authenticated {
                       hist_log = append(hist_log, histLogEntry{ "user", "auth", client.Attrs["cl_user"], now, string(json) })
                     }
                   }
@@ -851,7 +1075,8 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
             rrd_queue = append(rrd_queue, cmd)
 
             wlc_stats["clients"] ++
-            if client.Attrs["cl_pol_status"] == "0" {
+
+            if client_authenticated {
               wlc_stats["auth_clients"] ++
             }
           }
@@ -913,15 +1138,23 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
             delete(globalAps, ap_index)
           } else if ap.keys_check != (len(ap_keys) + len(ap.RadioAttrs)*len(ap_radio_keys) + len(ap.CdpNeiAttrs)*len(ap_cdp_keys)) {
             //incomplete data
+            //fmt.Println("ERROR: incomplete data", dev_ip, ap.keys_check,
+            //  len(ap_keys), len(ap.RadioAttrs), len(ap_radio_keys), len(ap.CdpNeiAttrs), len(ap_cdp_keys),
+            //)
 
             delete(globalAps, ap_index)
           } else {
 
             ap.Status = "online"
+            if ap.Attrs["ap_ip"] == "255.255.255.255" {
+              ap.Status = "offline"
+            }
 
             ap.Attrs["ap_site"] = get_site(ap.Attrs["ap_ip"])
             ap.Attrs["ap_site_tags"] = get_site_tags(ap.Attrs["ap_ip"])
             ap.Attrs["ap_netname"] = get_netname(ap.Attrs["ap_ip"])
+
+            ap.Attrs["ap_wlc_type"] = wlc.Type
 
             if !first_scan {
               if ap.added == ap.Last_ok {
@@ -932,6 +1165,31 @@ func worker(dev_ip string, wg *sync.WaitGroup, stop_ch chan struct{}) {
                   json = []byte("json_error")
                 }
                 hist_log = append(hist_log, histLogEntry{ "ap", "connect", ap.Mac, now, string(json) })
+              } else {
+                //check radio channels change for logging
+                for radio_idx, _ := range ap.RadioAttrs {
+                  radio_channel, channel_ex := ap.RadioAttrs[radio_idx]["r_channel"]
+                  _, prev_ap_ex := prev_globalAps[ap_index]
+                  if prev_ap_ex {
+                    if _, prev_radio_ex := prev_globalAps[ap_index].RadioAttrs[radio_idx]; prev_radio_ex && prev_ap_ex && channel_ex {
+                      prev_channel, prev_channel_ex := prev_globalAps[ap_index].RadioAttrs[radio_idx]["r_channel"]
+                      if prev_channel_ex && radio_channel != prev_channel {
+
+                        ap.RadioAttrs[radio_idx]["r_prev_channel"] = prev_channel
+                        ap.RadioAttrs[radio_idx]["r_channel_changed"] = fmt.Sprint(now)
+
+                        json, jerr := json.MarshalIndent(
+                          ap_RadioInfo{ Ap: ap, Radio: radio_idx, Prev_channel: prev_channel, New_channel: radio_channel},
+                          "", "\t")
+                        if jerr != nil {
+                          json = []byte("json_error")
+                        }
+
+                        hist_log = append(hist_log, histLogEntry{ "ap", "channel_change", ap.Mac, now, string(json) })
+                      }
+                    }
+                  }
+                }
               }
             }
 
@@ -1070,13 +1328,19 @@ AP_REDIS_CYCLE: for ap_mac, ap_json := range apJsons {
         etime := fmt.Sprintf("%d", e.Time)
 
         //debug logs
-        if _, red_err = red.Do("PUBLISH", "log", etime+"\t"+e.Type+"\t"+e.Event+"\t"+e.Subject+"\t"+e.Info); red_err != nil {
+        if _, red_err = red.Do("PUBLISH", "log",                                    etime+"\t"+e.Type+"\t"+e.Event+"\t"+e.Subject+"\t"+e.Info); red_err != nil {
           break
         }
-        if _, red_err = red.Do("PUBLISH", "log_"+e.Type, etime+"\t"+e.Event+"\t"+e.Subject+"\t"+e.Info); red_err != nil {
+        if _, red_err = red.Do("PUBLISH", "log_"+e.Type,                            etime+"\t"+e.Event+"\t"+e.Subject+"\t"+e.Info); red_err != nil {
           break
         }
-        if _, red_err = red.Do("PUBLISH", "log_"+e.Type+"_"+e.Subject, etime+"\t"+e.Event+"\t"+e.Info); red_err != nil {
+        if _, red_err = red.Do("PUBLISH", "log_"+e.Type+"_"+e.Event,                etime+"\t"+e.Subject+"\t"+e.Info); red_err != nil {
+          break
+        }
+        if _, red_err = red.Do("PUBLISH", "log_"+e.Type+"_"+e.Subject,              etime+"\t"+e.Event+"\t"+e.Info); red_err != nil {
+          break
+        }
+        if _, red_err = red.Do("PUBLISH", "log_"+e.Type+"_"+e.Event+"_"+e.Subject,  etime+"\t"+e.Event+"\t"+e.Info); red_err != nil {
           break
         }
 

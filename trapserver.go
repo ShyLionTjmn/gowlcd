@@ -220,7 +220,13 @@ func myTrapHandler(packet *snmp.SnmpPacket, addr *net.UDPAddr) {
       if _, trapserver_red_err = trapserver_red.Do("PUBLISH", "log_"+e.Type, etime+"\t"+e.Event+"\t"+e.Subject+"\t"+e.Info); trapserver_red_err != nil {
         break
       }
+      if _, trapserver_red_err = trapserver_red.Do("PUBLISH", "log_"+e.Type+"_"+e.Event, etime+"\t"+e.Subject+"\t"+e.Info); trapserver_red_err != nil {
+        break
+      }
       if _, trapserver_red_err = trapserver_red.Do("PUBLISH", "log_"+e.Type+"_"+e.Subject, etime+"\t"+e.Event+"\t"+e.Info); trapserver_red_err != nil {
+        break
+      }
+      if _, trapserver_red_err = trapserver_red.Do("PUBLISH", "log_"+e.Type+"_"+e.Event+"_"+e.Subject, etime+"\t"+e.Info); trapserver_red_err != nil {
         break
       }
 

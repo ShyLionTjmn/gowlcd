@@ -45,6 +45,7 @@ func bToMb(b uint64) uint64 {
 type conf_wlcs struct {
   Enabled        int          `json:"enabled"`
   Community      string       `json:"community"`
+  Type           string       `json:"type"`
 }
 
 type conf_options struct {
@@ -232,7 +233,7 @@ func main() {
   for ip, wlc := range config.Wlcs {
     if wlc.Enabled > 0 {
       wg.Add(1)
-      go worker(ip, &wg, stop_ch)
+      go worker(ip, &wg, stop_ch, wlc)
     }
   }
 

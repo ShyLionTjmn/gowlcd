@@ -7,6 +7,76 @@ var global_mouse_down=false;
 
 var global_AP_models={};
 
+var huawei_pol_types = {
+  "1": "wepOpenSystem",
+  "2": "wepOpenSystemMac",
+  "3": "wepOpenSystem8021X",
+  "4": "wepOpenSystemPortal",
+  "5": "wepShareKey",
+  "6": "wepShareKeyMac",
+  "7": "wepShareKey8021X",
+  "8": "wepShareKeyPortal",
+  "9": "wpa8021X",
+  "10": "wpaPreShareKey",
+  "11": "wpaPskMac",
+  "12": "wpaPskPortal",
+  "13": "wpa2Dot1x",
+  "14": "wpa2PreShareKey",
+  "15": "wpa2PskMac",
+  "16": "wpa2PskPortal",
+  "17": "wapiCertification",
+  "18": "wapiPreShareKey",
+  "19": "wpaWpa2PreShareKey",
+  "20": "wpaWpa2PskMac",
+  "21": "wpaWpa2PskPortal",
+  "22": "wpaWpa2Dot1x",
+  "23": "wapiPskPortal",
+  "24": "macDot1x",
+  "25": "wepShareKey8021XMac",
+  "26": "wpa8021XMac",
+  "27": "wpa2Dot1xMac",
+  "28": "wpaWpa2Dot1xMac",
+  "29": "wepOpenSystemPortalMac",
+  "30": "wepShareKeyPortalMac",
+  "31": "wpaPskPortalMac",
+  "32": "wpa2PskPortalMac",
+  "33": "wpaWpa2PskPortalMac",
+  "34": "wapiPskPortalMac",
+  "35": "wpaPpsk",
+  "36": "wpaPpskMac",
+  "37": "wpaPpskPortal",
+  "38": "wpaPpskPortalMac",
+  "39": "wpa2Ppsk",
+  "40": "wpa2PpskMac",
+  "41": "wpa2PpskPortal",
+  "42": "wpa2PpskPortalMac",
+  "43": "wpaWpa2Ppsk",
+  "44": "wpaWpa2PpskMac",
+  "45": "wpaWpa2PpskPortal",
+  "46": "wpaWpa2PpskPortalMac",
+  "47": "wep8021X",
+  "48": "wpa3Dot1x",
+  "49": "wpa3Dot1xMac",
+  "50": "wpa3Sae",
+  "51": "wpa3SaePortal",
+  "52": "wpa3SaeMac",
+  "53": "wpa3SaePortalMac",
+  "54": "wpa2PskWpa3Sae",
+  "55": "wpa2PskWpa3SaePortal",
+  "56": "wpa2PskWpa3SaePortalMac",
+  "57": "wpa2PskWpa3SaeMac",
+  "58": "wpaDpsk",
+  "59": "wpaDpskMac",
+  "60": "wpa2Dpsk",
+  "61": "wpa2DpskMac",
+  "62": "wpaWpa2Dpsk",
+  "63": "wpaWpa2DpskMac",
+  "64": "OWE",
+  "65": "OWEMAC",
+  "66": "OWEPortal",
+  "67": "OWEPortalMAC"
+};
+
 function same_site(a, b) {
   if(a === b) return true;
   if(String(a).length > String(b).length && String(a+",").indexOf(b+",") == 0) return true;
@@ -380,7 +450,7 @@ function get_ap_div(ap_id) {
   ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_mac"].toLowerCase());
   ap_search_array.push(data["aps"][ap_id]["status"].toLowerCase());
   ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_model"].toLowerCase());
-  ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_location"].toLowerCase());
+  ap_search_array.push(String(data["aps"][ap_id]["ap_attrs"]["ap_location"]).toLowerCase());
   ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_serial"].toLowerCase());
   ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_site"].toLowerCase());
   ap_search_array.push(data["aps"][ap_id]["ap_attrs"]["ap_ip"].toLowerCase());
@@ -563,20 +633,38 @@ function get_ap_div(ap_id) {
             .data("id", r)
            ;
            let radio_type="UNKN";
-           if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "1") {
-             radio_type="2.4Ghz";
-           } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "2") {
-             radio_type="5Ghz";
-           } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "4") {
-             radio_type="UWB";
+           let radio_off = true;
+
+           if(data["aps"][id]["ap_attrs"]["ap_wlc_type"] == "cisco") {
+             if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "1") {
+               radio_type="2.4Ghz";
+             } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "2") {
+               radio_type="5Ghz";
+             } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "4") {
+               radio_type="UWB";
+             };
+
+             radio_off = data["aps"][id]["ap_radio_attrs"][r]["r_state"] == 1;
+
+           } else if(data["aps"][id]["ap_attrs"]["ap_wlc_type"] == "huawei") {
+             if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "1") {
+               radio_type="2.4Ghz";
+             } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "2") {
+               radio_type="5Ghz";
+             } else if(data["aps"][id]["ap_radio_attrs"][r]["r_type"] == "3") {
+               radio_type="6Ghz";
+             };
+
+             radio_off = data["aps"][id]["ap_radio_attrs"][r]["r_state"] == 2;
            };
+
 
            radio_div
             .data("band", radio_type)
             .append( $(LABEL).text("Radio: ") )
             .append( $(SPAN).addClass("r_type_cont").append( $(LABEL).text(radio_type).addClass("radio_type") ) )
             .append( $(SPAN).addClass("min3em")
-              .append( data["aps"][id]["ap_radio_attrs"][r]["r_state"] == 1?
+              .append( radio_off?
                 $(LABEL).text("OFF").addClass("radio_off"):
                 $(LABEL).text("On").addClass("radio_on")
               )
@@ -639,124 +727,231 @@ function get_ap_div(ap_id) {
             )
             .append( $(SPAN).addClass("min1em") )
             .append( $(LABEL).text("Counters: ") )
-            .append( $(LABEL).text("ACKF: ").title("ACK fail") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_ack_fail_cnt"])).title("ACK fail") )
-            .append( $(LABEL).text("d11F: ").title(".11 Fail") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_d11_fail_cnt"])).title(".11 Fail") )
-            .append( $(LABEL).text("DUP: ").title("Duplicates") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_dup_cnt"])).title("Duplicates") )
-            .append( $(LABEL).text("FCSE: ").title("FCS errors") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_fcs_error_cnt"])).title("FCS errors") )
-            .append( $(LABEL).text("RETR: ").title("Retries") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_retry_cnt"])).title("Retries") )
-            .append( $(LABEL).text("RTSF: ").title("RTS Fail") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_fail_cnt"])).title("RTS Fail") )
-            .append( $(LABEL).text("RTSS: ").title("RTS Success") )
-            .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_succ_cnt"])).title("RTS Success") )
-            .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
-              .addClass("ui-icon").addClass("ui-icon-chart-line")
-              .addClass("button").addClass("button_graph_r_counters"+r)
-              .click(function() {
-                let subject_div = $(this).closest(".ap_div");
-                let info_div = subject_div.find(".ap_head_div").find(".info_div");
-                let id = subject_div.data("id");
-                let radio_div = $(this).closest(".radio_div");
-                let radio_id = radio_div.data("id");
-                let band = radio_div.data("band");
-                let graph_class = "graph_ap_radio"+radio_id+"_counters";
-                let local_key = graph_class+"_"+id;
+           ;
 
-                if(subject_div.find("."+graph_class).length > 0) {
-                  subject_div.find("."+graph_class).find(".close").trigger("click");
-                  return;
-                };
+           if(data["aps"][id]["ap_attrs"]["ap_wlc_type"] == "cisco") {
+             radio_div
+              .append( $(LABEL).text("ACKF: ").title("ACK fail") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_ack_fail_cnt"])).title("ACK fail") )
+              .append( $(LABEL).text("d11F: ").title(".11 Fail") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_d11_fail_cnt"])).title(".11 Fail") )
+              .append( $(LABEL).text("DUP: ").title("Duplicates") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_dup_cnt"])).title("Duplicates") )
+              .append( $(LABEL).text("FCSE: ").title("FCS errors") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_fcs_error_cnt"])).title("FCS errors") )
+              .append( $(LABEL).text("RETR: ").title("Retries") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_retry_cnt"])).title("Retries") )
+              .append( $(LABEL).text("RTSF: ").title("RTS Fail") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_fail_cnt"])).title("RTS Fail") )
+              .append( $(LABEL).text("RTSS: ").title("RTS Success") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rts_succ_cnt"])).title("RTS Success") )
+              .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
+                .addClass("ui-icon").addClass("ui-icon-chart-line")
+                .addClass("button").addClass("button_graph_r_counters"+r)
+                .click(function() {
+                  let subject_div = $(this).closest(".ap_div");
+                  let info_div = subject_div.find(".ap_head_div").find(".info_div");
+                  let id = subject_div.data("id");
+                  let radio_div = $(this).closest(".radio_div");
+                  let radio_id = radio_div.data("id");
+                  let band = radio_div.data("band");
+                  let graph_class = "graph_ap_radio"+radio_id+"_counters";
+                  let local_key = graph_class+"_"+id;
 
-                let graph_keys={};
-                graph_keys["r_ack_fail_cnt_"+radio_id] = {
-                  "_order": 1,
-                  "label": "ACK Fail",
-                  "color": "blue",
-                  "borderColor": "blue",
-                  "borderWidth": 1,
-                  "backgroundColor": "blue",
-                  "yAxisID": "y",
-                };
+                  if(subject_div.find("."+graph_class).length > 0) {
+                    subject_div.find("."+graph_class).find(".close").trigger("click");
+                    return;
+                  };
 
-                graph_keys["r_d11_fail_cnt_"+radio_id] = {
-                  "_order": 2,
-                  "label": "Dot11 Fail",
-                  "color": "red",
-                  "borderColor": "red",
-                  "borderWidth": 1,
-                  "backgroundColor": "red",
-                  "yAxisID": "y",
-                };
-                graph_keys["r_dup_cnt_"+radio_id] = {
-                  "_order": 3,
-                  "label": "Duplicates",
-                  "color": "yellow",
-                  "borderColor": "yellow",
-                  "borderWidth": 1,
-                  "backgroundColor": "yellow",
-                  "yAxisID": "y",
-                };
-                graph_keys["r_fcs_error_cnt_"+radio_id] = {
-                  "_order": 4,
-                  "label": "FCS Error",
-                  "color": "darkorange",
-                  "borderColor": "darkorange",
-                  "borderWidth": 1,
-                  "backgroundColor": "darkorange",
-                  "yAxisID": "y",
-                };
-                graph_keys["r_retry_cnt_"+radio_id] = {
-                  "_order": 5,
-                  "label": "Retries",
-                  "color": "purple",
-                  "borderColor": "purple",
-                  "borderWidth": 1,
-                  "backgroundColor": "purple",
-                  "yAxisID": "y",
-                };
-                graph_keys["r_rts_fail_cnt_"+radio_id] = {
-                  "_order": 6,
-                  "label": "RTS Fail",
-                  "color": "lime",
-                  "borderColor": "lime",
-                  "borderWidth": 1,
-                  "backgroundColor": "lime",
-                  "yAxisID": "y",
-                };
-                graph_keys["r_rts_succ_cnt_"+radio_id] = {
-                  "_order": 7,
-                  "label": "RTS Success",
-                  "color": "green",
-                  "borderColor": "green",
-                  "borderWidth": 1,
-                  "backgroundColor": "green",
-                  "yAxisID": "y",
-                };
-                let graph_options={
-                  "options": {
-                    "scales": {
-                      "y": {
-                        "type": "linear",
-                        "display": true,
-                        "position": "left",
+                  let graph_keys={};
+                  graph_keys["r_ack_fail_cnt_"+radio_id] = {
+                    "_order": 1,
+                    "label": "ACK Fail",
+                    "color": "blue",
+                    "borderColor": "blue",
+                    "borderWidth": 1,
+                    "backgroundColor": "blue",
+                    "yAxisID": "y",
+                  };
+
+                  graph_keys["r_d11_fail_cnt_"+radio_id] = {
+                    "_order": 2,
+                    "label": "Dot11 Fail",
+                    "color": "red",
+                    "borderColor": "red",
+                    "borderWidth": 1,
+                    "backgroundColor": "red",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_dup_cnt_"+radio_id] = {
+                    "_order": 3,
+                    "label": "Duplicates",
+                    "color": "yellow",
+                    "borderColor": "yellow",
+                    "borderWidth": 1,
+                    "backgroundColor": "yellow",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_fcs_error_cnt_"+radio_id] = {
+                    "_order": 4,
+                    "label": "FCS Error",
+                    "color": "darkorange",
+                    "borderColor": "darkorange",
+                    "borderWidth": 1,
+                    "backgroundColor": "darkorange",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_retry_cnt_"+radio_id] = {
+                    "_order": 5,
+                    "label": "Retries",
+                    "color": "purple",
+                    "borderColor": "purple",
+                    "borderWidth": 1,
+                    "backgroundColor": "purple",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_rts_fail_cnt_"+radio_id] = {
+                    "_order": 6,
+                    "label": "RTS Fail",
+                    "color": "lime",
+                    "borderColor": "lime",
+                    "borderWidth": 1,
+                    "backgroundColor": "lime",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_rts_succ_cnt_"+radio_id] = {
+                    "_order": 7,
+                    "label": "RTS Success",
+                    "color": "green",
+                    "borderColor": "green",
+                    "borderWidth": 1,
+                    "backgroundColor": "green",
+                    "yAxisID": "y",
+                  };
+                  let graph_options={
+                    "options": {
+                      "scales": {
+                        "y": {
+                          "type": "linear",
+                          "display": true,
+                          "position": "left",
+                        },
                       },
                     },
-                  },
-                };
+                  };
 
 
-                let graph_div=get_graph_div('Счетчики '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
-                 .css({"background-color": "white"})
-                 .appendTo(info_div)
-                ;
-                graph_div.find(".refresh").trigger("click");
-                save_local(local_key, true);
-              })
-            )
+                  let graph_div=get_graph_div('Счетчики '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
+                   .css({"background-color": "white"})
+                   .appendTo(info_div)
+                  ;
+                  graph_div.find(".refresh").trigger("click");
+                  save_local(local_key, true);
+                })
+              )
+             ;
+
+           } else if(data["aps"][id]["ap_attrs"]["ap_wlc_type"] == "huawei") {
+             radio_div
+              .append( $(LABEL).text("RX: ").title("RX frames") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rx_f_cnt"])).title("RX frames") )
+              .append( $(LABEL).text("RX Err: ").title("RX errors") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rx_err_cnt"])).title("RX errors") )
+              .append( $(LABEL).text("RX Drp: ").title("RX drops") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_rx_drp_cnt"])).title("RX drops") )
+              .append( $(LABEL).text("TX: ").title("TX frames") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_tx_f_cnt"])).title("TX frames") )
+              .append( $(LABEL).text("RETR: ").title("Retries") )
+              .append( $(SPAN).addClass("min4em").text(GMK(data["aps"][id]["ap_radio_attrs"][r]["r_retry_cnt"])).title("Retries") )
+              .append( !data["aps"][id]["rrd_file"]?$(LABEL):$(LABEL)
+                .addClass("ui-icon").addClass("ui-icon-chart-line")
+                .addClass("button").addClass("button_graph_r_counters"+r)
+                .click(function() {
+                  let subject_div = $(this).closest(".ap_div");
+                  let info_div = subject_div.find(".ap_head_div").find(".info_div");
+                  let id = subject_div.data("id");
+                  let radio_div = $(this).closest(".radio_div");
+                  let radio_id = radio_div.data("id");
+                  let band = radio_div.data("band");
+                  let graph_class = "graph_ap_radio"+radio_id+"_counters";
+                  let local_key = graph_class+"_"+id;
+
+                  if(subject_div.find("."+graph_class).length > 0) {
+                    subject_div.find("."+graph_class).find(".close").trigger("click");
+                    return;
+                  };
+
+                  let graph_keys={};
+                  graph_keys["r_rx_f_cnt_"+radio_id] = {
+                    "_order": 1,
+                    "label": "RX",
+                    "color": "blue",
+                    "borderColor": "blue",
+                    "borderWidth": 1,
+                    "backgroundColor": "blue",
+                    "yAxisID": "y",
+                  };
+
+                  graph_keys["r_rx_err_cnt_"+radio_id] = {
+                    "_order": 2,
+                    "label": "RX Err",
+                    "color": "red",
+                    "borderColor": "red",
+                    "borderWidth": 1,
+                    "backgroundColor": "red",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_rx_drp_cnt_"+radio_id] = {
+                    "_order": 3,
+                    "label": "Drops",
+                    "color": "yellow",
+                    "borderColor": "yellow",
+                    "borderWidth": 1,
+                    "backgroundColor": "yellow",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_tx_f_cnt_"+radio_id] = {
+                    "_order": 4,
+                    "label": "TX",
+                    "color": "darkorange",
+                    "borderColor": "darkorange",
+                    "borderWidth": 1,
+                    "backgroundColor": "darkorange",
+                    "yAxisID": "y",
+                  };
+                  graph_keys["r_retry_cnt_"+radio_id] = {
+                    "_order": 5,
+                    "label": "Retries",
+                    "color": "purple",
+                    "borderColor": "purple",
+                    "borderWidth": 1,
+                    "backgroundColor": "purple",
+                    "yAxisID": "y",
+                  };
+                  let graph_options={
+                    "options": {
+                      "scales": {
+                        "y": {
+                          "type": "linear",
+                          "display": true,
+                          "position": "left",
+                        },
+                      },
+                    },
+                  };
+
+
+                  let graph_div=get_graph_div('Счетчики '+band, graph_class, "ap", id, graph_keys, graph_options, local_key)
+                   .css({"background-color": "white"})
+                   .appendTo(info_div)
+                  ;
+                  graph_div.find(".refresh").trigger("click");
+                  save_local(local_key, true);
+                })
+              )
+             ;
+           };
+           radio_div
             .appendTo(idiv)
            ;
          };
@@ -961,11 +1156,23 @@ function mac_event(ev) {
     let client=ev["event"]["client"];
 
     let auth_state=$(SPAN).addClass("event_auth_state");
+    let authorized = false;
 
-    if(client["client_attrs"]["cl_pol_status"] == "0") {
-      auth_state.text("Авт").addClass("auth_client").title("Авторизован");
-    } else {
-      auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+    if( client["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+
+      if(client["client_attrs"]["cl_pol_status"] == "0") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
+    } else if( client["client_attrs"]["cl_wlc_type"] == "huawei" ) {
+      if(client["client_attrs"]["cl_status"] == "3") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
     };
 
     event_type.text("Роаминг").title("Смена точки доступа или радио-диапазона");
@@ -983,7 +1190,7 @@ function mac_event(ev) {
     };
 
     event_cont
-     .append( $(SPAN).text(client["client_attrs"]["cl_ssid_name"]) )
+     .append( $(SPAN).text(client["client_attrs"]["cl_ssid"]) )
      .append( auth_state )
      .append( $(SPAN).text(prev_ap_name).title(ev["event"]["PrevAP_MAC"]) )
      .append( $(SPAN).text(prev_ap_radio).addClass("radio_type") )
@@ -1019,10 +1226,21 @@ function mac_event(ev) {
 
     let auth_state=$(SPAN).addClass("event_auth_state");
 
-    if(client["client_attrs"]["cl_pol_status"] == "0") {
-      auth_state.text("Авт").addClass("auth_client").title("Авторизован");
-    } else {
-      auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+    if( client["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+
+      if(client["client_attrs"]["cl_pol_status"] == "0") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
+    } else if( client["client_attrs"]["cl_wlc_type"] == "huawei" ) {
+      if(client["client_attrs"]["cl_status"] == "3") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
     };
 
     event_type.text("Подключение").title("Устройство подключилось");
@@ -1034,7 +1252,7 @@ function mac_event(ev) {
       };
 
     event_cont
-     .append( $(SPAN).text(client["client_attrs"]["cl_ssid_name"]) )
+     .append( $(SPAN).text(client["client_attrs"]["cl_ssid"]) )
      .append( auth_state )
      .append( $(SPAN).text(ap_name).title(ap_mac) )
     ;
@@ -1055,10 +1273,21 @@ function mac_event(ev) {
 
     let auth_state=$(SPAN).addClass("event_auth_state");
 
-    if(client["client_attrs"]["cl_pol_status"] == "0") {
-      auth_state.text("Авт").addClass("auth_client").title("Авторизован");
-    } else {
-      auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+    if( client["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+
+      if(client["client_attrs"]["cl_pol_status"] == "0") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
+    } else if( client["client_attrs"]["cl_wlc_type"] == "huawei" ) {
+      if(client["client_attrs"]["cl_status"] == "3") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
     };
 
     event_type.text("Отключение").title("Устройство отключилось от сети");
@@ -1070,7 +1299,7 @@ function mac_event(ev) {
       };
 
     event_cont
-     .append( $(SPAN).text(client["client_attrs"]["cl_ssid_name"]) )
+     .append( $(SPAN).text(client["client_attrs"]["cl_ssid"]) )
      .append( auth_state )
      .append( $(SPAN).text(ap_name).title(ap_mac) )
     ;
@@ -1091,12 +1320,21 @@ function mac_event(ev) {
 
     let auth_state=$(SPAN).addClass("event_auth_state");
 
-    if(client["client_attrs"]["cl_pol_status"] == "0") {
-      event_type.text("Авторизация").title("Устройство авторизовалось");
-      auth_state.text("Авт").addClass("auth_client").title("Авторизован");
-    } else {
-      event_type.text("Деавторизация").title("Устройство потеряло авторизацию");
-      auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+    if( client["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+
+      if(client["client_attrs"]["cl_pol_status"] == "0") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
+    } else if( client["client_attrs"]["cl_wlc_type"] == "huawei" ) {
+      if(client["client_attrs"]["cl_status"] == "3") {
+        auth_state.text("Авт").addClass("auth_client").title("Авторизован");
+      } else {
+        auth_state.text("НАвт").addClass("unauth_client").title("Не авторизован");
+      };
+
     };
 
     let ap_mac = client["client_attrs"]["cl_ap_mac"];
@@ -1107,7 +1345,7 @@ function mac_event(ev) {
       };
 
     event_cont
-     .append( $(SPAN).text(client["client_attrs"]["cl_ssid_name"]) )
+     .append( $(SPAN).text(client["client_attrs"]["cl_ssid"]) )
      .append( auth_state )
      .append( $(SPAN).text(ap_name).title(ap_mac) )
     ;
@@ -1715,10 +1953,19 @@ function get_client_div(client_id) {
     };
   };
 
-  if( data["clients"][client_id]["client_attrs"]["cl_pol_status"] == "0") {
-    client_div.addClass("auth_client");
-  } else {
-    client_div.addClass("unauth_client");
+  if( data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+
+    if( data["clients"][client_id]["client_attrs"]["cl_pol_status"] == "0") {
+      client_div.addClass("auth_client");
+    } else {
+      client_div.addClass("unauth_client");
+    };
+  } else if( data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "huawei" ) {
+    if( data["clients"][client_id]["client_attrs"]["cl_status"] == "3") {
+      client_div.addClass("auth_client");
+    } else {
+      client_div.addClass("unauth_client");
+    };
   };
 
 
@@ -1833,48 +2080,177 @@ function get_client_div(client_id) {
   let cl_status="unkn";
   let cl_status_title="Unknown!";
   let cl_status_color="#202020";
-
-  if(data["clients"][client_id]["client_attrs"]["cl_status"] == "0") {
-    cl_status="idle";
-    cl_status_title="Idle";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "1") {
-    cl_status="aaaPend";
-    cl_status_title="AAA pending";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "2") {
-    cl_status="auth";
-    cl_status_title="Authenticated";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "3") {
-    cl_status="assoc";
-    cl_status_title="Associated";
-    cl_status_color="green";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "4") {
-    cl_status="pwsave";
-    cl_status_title="Powersave";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "5") {
-    cl_status="diss";
-    cl_status_title="Disassociated";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "6") {
-    cl_status="del";
-    cl_status_title="To be deleted";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "7") {
-    cl_status="probe";
-    cl_status_title="Probing";
-    cl_status_color="darkorange";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "8") {
-    cl_status="blist";
-    cl_status_title="Blacklisted";
-    cl_status_color="darkorange";
-  };
-
   let cl_pol_state_color="darkorange";
-  if(data["clients"][client_id]["client_attrs"]["cl_pol_state"] == "RUN") {
-    cl_pol_state_color="green";
+  let cl_pol_state="n/d";
+  let cl_radio="n/d";
+  let cl_rate="n/d";
+  let cl_int="n/d";
+  let cl_pol_type="Unkn";
+  let cl_eap_type="hide";
+
+
+  if( data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "cisco" ) {
+    if(data["clients"][client_id]["client_attrs"]["cl_status"] == "0") {
+      cl_status="idle";
+      cl_status_title="Idle";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "1") {
+      cl_status="aaaPend";
+      cl_status_title="AAA pending";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "2") {
+      cl_status="auth";
+      cl_status_title="Authenticated";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "3") {
+      cl_status="assoc";
+      cl_status_title="Associated";
+      cl_status_color="green";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "4") {
+      cl_status="pwsave";
+      cl_status_title="Powersave";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "5") {
+      cl_status="diss";
+      cl_status_title="Disassociated";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "6") {
+      cl_status="del";
+      cl_status_title="To be deleted";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "7") {
+      cl_status="probe";
+      cl_status_title="Probing";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "8") {
+      cl_status="blist";
+      cl_status_title="Blacklisted";
+      cl_status_color="darkorange";
+    };
+
+    if(data["clients"][client_id]["client_attrs"]["cl_pol_state"] == "RUN") {
+      cl_pol_state_color="green";
+    };
+    cl_pol_state = data["clients"][client_id]["client_attrs"]["cl_pol_state"];
+
+    if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "1") {
+      cl_radio=".11a 5Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "2") {
+      cl_radio=".11b 2.4Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "3") {
+      cl_radio=".11g 2.4Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "4") {
+      cl_radio="unknown";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "5") {
+      cl_radio="mobile";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "6") {
+      cl_radio=".11n 2.4Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "7") {
+      cl_radio=".11n 5Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "8") {
+      cl_radio="ethernet";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "9") {
+      cl_radio=".3";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "10") {
+      cl_radio=".11ac";
+    };
+
+    cl_rate = data["clients"][client_id]["client_attrs"]["cl_rate"];
+
+    cl_int = data["clients"][client_id]["client_attrs"]["cl_int"];
+
+    if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "0") {
+      cl_pol_type="Dot1x";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "1") {
+      cl_pol_type="WPA1";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "2") {
+      cl_pol_type="WPA2";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "3") {
+      cl_pol_type="WPA2vff";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "4") {
+      cl_pol_type="n/a";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "5") {
+      cl_pol_type="Unkn";
+    };
+
+    if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] != "7") {
+      if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "0") {
+        cl_eap_type="EAP-TLS";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "1") {
+        cl_eap_type="EAP-TTLS";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "2") {
+        cl_eap_type="EAP-PEAP";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "3") {
+        cl_eap_type="EAP-LEAP";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "4") {
+        cl_eap_type="EAP-SPEKE";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "5") {
+        cl_eap_type="EAP-FAST";
+      } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "6") {
+        cl_eap_type="n/a";
+      };
+    };
+
+  } else if(data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "huawei") {
+    if(data["clients"][client_id]["client_attrs"]["cl_status"] == "1") {
+      cl_status="age";
+      cl_status_title="Age";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "2") {
+      cl_status="aaaPend";
+      cl_status_title="AAA pending";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "3") {
+      cl_status="assoc";
+      cl_status_title="Associated";
+      cl_status_color="green";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "4") {
+      cl_status="roam";
+      cl_status_title="Roam";
+      cl_status_color="darkorange";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_status"] == "5") {
+      cl_status="backup";
+      cl_status_title="Backup";
+      cl_status_color="darkorange";
+    };
+
+    if(data["clients"][client_id]["client_attrs"]["cl_status"] == "3") {
+      cl_pol_state_color="green";
+      cl_pol_state = "RUN";
+    };
+
+    if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "1") {
+      cl_radio=".11b";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "2") {
+      cl_radio=".11g";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "3") {
+      cl_radio=".11n";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "4") {
+      cl_radio=".11a";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "5") {
+      cl_radio=".11ac";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "6") {
+      cl_radio=".11ax";
+    };
+
+    if(data["clients"][client_id]["client_attrs"]["cl_radio_band"] == "1") {
+      cl_radio += " 2.4Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio_band"] == "2") {
+      cl_radio += " 5Ghz";
+    } else if(data["clients"][client_id]["client_attrs"]["cl_radio_band"] == "3") {
+      cl_radio += " 6Ghz";
+    };
+
+
+    cl_rate = data["clients"][client_id]["client_attrs"]["cl_tx_rate"] + "/" + data["clients"][client_id]["client_attrs"]["cl_rx_rate"];
+
+    cl_int = ""
+
+
+    if(huawei_pol_types[ data["clients"][client_id]["client_attrs"]["cl_pol_type"] ] != undefined) {
+      cl_pol_type = huawei_pol_types[ data["clients"][client_id]["client_attrs"]["cl_pol_type"] ];
+    };
+
   };
 
   client_div
@@ -1882,87 +2258,38 @@ function get_client_div(client_id) {
    .append( $(SPAN).text("Status: ") )
    .append( $(SPAN).text(cl_status).title(cl_status_title).css({"color": cl_status_color}) )
    .append( $(SPAN).text("/") )
-   .append( $(SPAN).text(data["clients"][client_id]["client_attrs"]["cl_pol_state"]).css({"color": cl_pol_state_color}) )
+   .append( $(SPAN).text(cl_pol_state).css({"color": cl_pol_state_color}) )
   ;
-
-  let cl_radio="n/d";
-
-  if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "1") {
-    cl_radio=".11a 5Ghz";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "2") {
-    cl_radio=".11b 2.4Ghz";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "3") {
-    cl_radio=".11g 2.4Ghz";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "4") {
-    cl_radio="unknown";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "5") {
-    cl_radio="mobile";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "6") {
-    cl_radio=".11n 2.4Ghz";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "7") {
-    cl_radio=".11n 5Ghz";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "8") {
-    cl_radio="ethernet";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "9") {
-    cl_radio=".3";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_radio"] == "10") {
-    cl_radio=".11ac";
-  };
-
 
   client_div
    .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
    .append( $(SPAN).text("Radio: "+cl_radio) )
    .append( $(SPAN).text(" @ ") )
-   .append( $(SPAN).text(data["clients"][client_id]["client_attrs"]["cl_rate"]) )
+   .append( $(SPAN).text(cl_rate) )
   ;
 
-  client_div
-   .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
-   .append( $(SPAN).text("Int/VLAN: "+data["clients"][client_id]["client_attrs"]["cl_int"]) )
-   .append( $(SPAN).text(" / ") )
-   .append( $(SPAN).text(data["clients"][client_id]["client_attrs"]["cl_vlan"]) )
-  ;
-
-  let cl_pol_type="Unkn";
-
-  if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "0") {
-    cl_pol_type="Dot1x";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "1") {
-    cl_pol_type="WPA1";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "2") {
-    cl_pol_type="WPA2";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "3") {
-    cl_pol_type="WPA2vff";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "4") {
-    cl_pol_type="n/a";
-  } else if(data["clients"][client_id]["client_attrs"]["cl_pol_type"] == "5") {
-    cl_pol_type="Unkn";
+  if(cl_int != "") {
+    client_div
+     .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
+     .append( $(SPAN).text("Int/VLAN: "+cl_int) )
+     .append( $(SPAN).text(" / ") )
+     .append( $(SPAN).text(data["clients"][client_id]["client_attrs"]["cl_vlan"]) )
+    ;
+  } else {
+    client_div
+     .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
+     .append( $(SPAN).text("VLAN: ") )
+     .append( $(SPAN).text(data["clients"][client_id]["client_attrs"]["cl_vlan"]) )
+    ;
   };
+
 
   client_div
    .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
    .append( $(SPAN).text("Sec: "+cl_pol_type).title("Policy type") )
   ;
 
-  if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] != "7") {
-    let cl_eap_type="Unkn";
-    if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "0") {
-      cl_eap_type="EAP-TLS";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "1") {
-      cl_eap_type="EAP-TTLS";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "2") {
-      cl_eap_type="EAP-PEAP";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "3") {
-      cl_eap_type="EAP-LEAP";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "4") {
-      cl_eap_type="EAP-SPEKE";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "5") {
-      cl_eap_type="EAP-FAST";
-    } else if(data["clients"][client_id]["client_attrs"]["cl_eap_type"] == "6") {
-      cl_eap_type="n/a";
-    };
-
+  if(cl_eap_type != "hide") {
     client_div
      .append( $(SPAN).text(" / ") )
      .append( $(SPAN).text(cl_eap_type).title("EAP type") )
@@ -2096,72 +2423,143 @@ function get_client_div(client_id) {
        save_local(local_key, true);
      })
    )
-   .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
-   .append( $(LABEL).text("Err: Pol/Dup/Retr: ") )
-   .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_pol_errors"])).title("Policy errors") )
-   .append( $(SPAN).text(" / ") )
-   .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_dup_pkts"])).title("Duplicate packets") )
-   .append( $(SPAN).text(" / ") )
-   .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_data_retries"])).title("Data retries") )
-   .append( !data["clients"][client_id]["rrd_file"]?$(LABEL):$(LABEL)
-     .addClass("ui-icon").addClass("ui-icon-chart-line")
-     .addClass("button").addClass("button_graph_errors")
-     .css({"margin-left": "0.5em"})
-     .click(function() {
-       let subject_div=$(this).closest(".client_div");
-       let info_div=subject_div;
-       let id=subject_div.data("id");
-       let graph_class="graph_client_errors";
-       let local_key=graph_class+"_"+id;
+  ;
 
-       if(subject_div.find("."+graph_class).length > 0) {
-         subject_div.find("."+graph_class).find(".close").trigger("click");
-         return;
-       };
 
-       let graph_keys={
-         "cl_data_retries": {
-           "_order": 1,
-           "label": "Повторы",
-           "color": "blue",
-           "borderColor": "blue",
-           "borderWidth": 1,
-           "backgroundColor": "blue",
-           "yAxisID": "y",
-         },
-         "cl_dup_pkts": {
-           "_order": 2,
-           "label": "Дубликаты",
-           "color": "red",
-           "borderColor": "red",
-           "borderWidth": 1,
-           "backgroundColor": "red",
-           "yAxisID": "y",
-         },
-       };
+  if(data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "cisco") {
+    client_div
+     .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
+     .append( $(LABEL).text("Err: Dup/Retr: ") )
+     .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_dup_pkts"])).title("Duplicates") )
+     .append( $(SPAN).text(" / ") )
+     .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_data_retries"])).title("Data retries") )
+     .append( !data["clients"][client_id]["rrd_file"]?$(LABEL):$(LABEL)
+       .addClass("ui-icon").addClass("ui-icon-chart-line")
+       .addClass("button").addClass("button_graph_errors")
+       .css({"margin-left": "0.5em"})
+       .click(function() {
+         let subject_div=$(this).closest(".client_div");
+         let info_div=subject_div;
+         let id=subject_div.data("id");
+         let graph_class="graph_client_errors";
+         let local_key=graph_class+"_"+id;
 
-       let graph_options={
-         "options": {
-           "scales": {
-             "y": {
-               "type": "linear",
-               "display": true,
-               "position": "left",
+         if(subject_div.find("."+graph_class).length > 0) {
+           subject_div.find("."+graph_class).find(".close").trigger("click");
+           return;
+         };
+
+         let graph_keys={
+           "cl_data_retries": {
+             "_order": 1,
+             "label": "Повторы",
+             "color": "blue",
+             "borderColor": "blue",
+             "borderWidth": 1,
+             "backgroundColor": "blue",
+             "yAxisID": "y",
+           },
+           "cl_dup_pkts": {
+             "_order": 2,
+             "label": "Duplicates",
+             "color": "red",
+             "borderColor": "red",
+             "borderWidth": 1,
+             "backgroundColor": "red",
+             "yAxisID": "y",
+           },
+         };
+
+         let graph_options={
+           "options": {
+             "scales": {
+               "y": {
+                 "type": "linear",
+                 "display": true,
+                 "position": "left",
+               },
              },
            },
-         },
-       };
-               
+         };
+                 
 
-       let graph_div=get_graph_div('Счетчики ошибок', graph_class, "client", id, graph_keys, graph_options, local_key)
-        .css({"background-color": "white"})
-        .appendTo(info_div)
-       ;
-       graph_div.find(".refresh").trigger("click");
-       save_local(local_key, true);
-     })
-   )
-  ;
+         let graph_div=get_graph_div('Счетчики ошибок', graph_class, "client", id, graph_keys, graph_options, local_key)
+          .css({"background-color": "white"})
+          .appendTo(info_div)
+         ;
+         graph_div.find(".refresh").trigger("click");
+         save_local(local_key, true);
+       })
+     )
+    ;
+  } else if(data["clients"][client_id]["client_attrs"]["cl_wlc_type"] == "huawei") {
+    client_div
+     .append( $(LABEL).css({"display": "inline-block", "min-width": "1em"}) )
+     .append( $(LABEL).text("Err: Drp/Retr: ") )
+     .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_p_drp_pkts"])).title("Drops over echo interval") )
+     .append( $(SPAN).text(" / ") )
+     .append( $(SPAN).text(GMK(data["clients"][client_id]["client_attrs"]["cl_p_data_retries"])).title("Data retries over echo interval") )
+     .append( !data["clients"][client_id]["rrd_file"]?$(LABEL):$(LABEL)
+       .addClass("ui-icon").addClass("ui-icon-chart-line")
+       .addClass("button").addClass("button_graph_errors")
+       .css({"margin-left": "0.5em"})
+       .click(function() {
+         let subject_div=$(this).closest(".client_div");
+         let info_div=subject_div;
+         let id=subject_div.data("id");
+         let graph_class="graph_client_errors";
+         let local_key=graph_class+"_"+id;
+
+         if(subject_div.find("."+graph_class).length > 0) {
+           subject_div.find("."+graph_class).find(".close").trigger("click");
+           return;
+         };
+
+         let graph_keys={
+           "cl_p_data_retries": {
+             "_order": 1,
+             "label": "Повторы",
+             "color": "blue",
+             "borderColor": "blue",
+             "borderWidth": 1,
+             "backgroundColor": "blue",
+             "yAxisID": "y",
+           },
+           "cl_p_drp_pkts": {
+             "_order": 2,
+             "label": "Drops",
+             "color": "red",
+             "borderColor": "red",
+             "borderWidth": 1,
+             "backgroundColor": "red",
+             "yAxisID": "y",
+           },
+         };
+
+         let graph_options={
+           "options": {
+             "scales": {
+               "y": {
+                 "type": "linear",
+                 "display": true,
+                 "position": "left",
+               },
+             },
+           },
+         };
+                 
+
+         let graph_div=get_graph_div('Счетчики ошибок', graph_class, "client", id, graph_keys, graph_options, local_key)
+          .css({"background-color": "white"})
+          .appendTo(info_div)
+         ;
+         graph_div.find(".refresh").trigger("click");
+         save_local(local_key, true);
+       })
+     )
+    ;
+  };
+
   client_div
    .data("search", client_search_array)
   ;
@@ -2294,8 +2692,9 @@ function refresh_page() {
         structure[wlc_ip]={ "ssids": {}, "idle_aps": []};
       };
       for(let ssid_id in data["wlcs"][wlc_ip]["ssids"]) {
-        if(typeof(structure[wlc_ip]["ssids"][ssid_id]) === 'undefined') {
-          structure[wlc_ip]["ssids"][ssid_id]={};
+        let ssid = data["wlcs"][wlc_ip]["ssids"][ssid_id];
+        if(typeof(structure[wlc_ip]["ssids"][ssid]) === 'undefined') {
+          structure[wlc_ip]["ssids"][ssid]={};
         };
       };
     };
@@ -2577,7 +2976,12 @@ error_at();
 
       let ssid_keys = keys(structure[wlc_ip]["ssids"]);
       ssid_keys.sort(function(a, b) {
-        return data["wlcs"][wlc_ip]["ssids"][ a ].localeCompare( data["wlcs"][wlc_ip]["ssids"][ b ]);
+        try {
+          //return data["wlcs"][wlc_ip]["ssids"][ a ].localeCompare( data["wlcs"][wlc_ip]["ssids"][ b ]);
+          return String(a).localeCompare(String(b));
+        } catch(e) {
+          return 0;
+        };
       });
 
       //wlc_ssids_div.append( $(DIV).text(ssid_keys.join(",")) );
@@ -2593,7 +2997,7 @@ error_at();
         });
 
         if(aps_keys.length > 0) {
-          let ssid_name=data["wlcs"][wlc_ip]["ssids"][ ssid_id ];
+          let ssid_name=ssid_id;
           let ssid_head=$(DIV).addClass("ssid_head_div")
            .append( $(LABEL).text(ssid_name) )
            .append( $(SPAN).addClass("head_buttons_spacer") )
